@@ -20,8 +20,8 @@ public class LoginController : MonoBehaviour
     [SerializeField]
     private TMP_InputField passText;
 
-    //ignore text variable, for testing 
-   
+    //ignore text variable, for testing
+
 
     [SerializeField]
     private Button btnLog;
@@ -29,14 +29,19 @@ public class LoginController : MonoBehaviour
     [SerializeField]
     private Transform Notification;
 
+    [SerializeField]
+    private Transform Notice;
+
+    [SerializeField]
+    private Transform LogoutPanel;
     bool isPressed;
+
     /// Checks whether the given Email-Parameter is a valid E-Mail address.
     public const string MatchEmailPattern =
         @"^(([\w-]+\.)+[\w-]+|([a-zA-Z]{1}|[\w-]{2,}))@"
         + @"((([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\.([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\."
         + @"([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\.([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])){1}|"
         + @"([a-zA-Z]+[\w-]+\.)+[a-zA-Z]{2,4})$";
-
 
     public static Player.PlayerInfo CreateFromJSON(string jsonString)
     {
@@ -74,7 +79,6 @@ public class LoginController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
         btnLog = GameObject.Find("LogBtn").transform.GetChild(0).GetComponent<Button>();
         emailWarningTransform = GameObject.Find("EmailWarning").GetComponent<Transform>();
         emailText = GameObject.Find("Email").GetComponent<TMP_InputField>();
@@ -89,7 +93,11 @@ public class LoginController : MonoBehaviour
     {
         if (!emailWarningTransform.gameObject.activeSelf)
         {
-            if (!string.IsNullOrEmpty(emailText.text) && !string.IsNullOrEmpty(passText.text) && !isPressed)
+            if (
+                !string.IsNullOrEmpty(emailText.text)
+                && !string.IsNullOrEmpty(passText.text)
+                && !isPressed
+            )
             {
                 //Debug.Log("email work");
                 btnLog.interactable = true;
@@ -103,16 +111,21 @@ public class LoginController : MonoBehaviour
 
     public void LogMasuk()
     {
-        isPressed =true;
+        isPressed = true;
         StartCoroutine(Login());
     }
 
     IEnumerator Login()
     {
-        btnLog.interactable = false;
+        //btnLog.interactable = false;
+        Notice.gameObject.SetActive(true);
+        Notice.transform.GetChild(0).transform.GetChild(0).gameObject.SetActive(true);
         WWWForm form = new WWWForm();
         form.AddField("_email", emailText.text);
         form.AddField("_password", passText.text);
+        form.AddField("_device_name", SystemInfo.deviceName + " " + SystemInfo.deviceModel);
+
+        //check detail yang dimasukkan oleh user, email atau password itu valid ke tak
         using (
             UnityWebRequest www = UnityWebRequest.Post(
                 Domains.instance.Domain + "loginVerify.php",
@@ -127,8 +140,9 @@ public class LoginController : MonoBehaviour
             )
             {
                 Debug.Log(www.error);
-               
                 btnLog.interactable = true;
+                Notice.gameObject.SetActive(false);
+                isPressed = false;
                 yield break;
             }
             else
@@ -138,26 +152,55 @@ public class LoginController : MonoBehaviour
                 //if it's an id
                 if (www.downloadHandler.text == "error")
                 {
-                    
                     btnLog.interactable = true;
+                    Debug.Log(www.downloadHandler.text);
+                    Notice.gameObject.SetActive(false);
+                    isPressed = false;
                     yield break;
                 }
                 else
                 {
-                    btnLog.interactable = false;
-
                     if (www.downloadHandler.text.Equals("password is not verify"))
                     {
-                       
                         btnLog.interactable = true;
+                        Debug.Log(www.downloadHandler.text);
+                        Notice.gameObject.SetActive(false);
+                        Notification.GetComponent<Animator>().Play("ShowNotificationStart");
+                        Notification
+                            .GetChild(0)
+                            .transform
+                            .GetChild(0)
+                            .transform
+                            .GetChild(1)
+                            .GetComponent<TextMeshProUGUI>()
+                            .text = "password is not verify..";
+                        isPressed = false;
+                        yield break;
+                    }
+                    else if (www.downloadHandler.text.Equals("invalid email"))
+                    {
+                        btnLog.interactable = true;
+                        Debug.Log(www.downloadHandler.text);
+                        Notice.gameObject.SetActive(false);
+                        Notification.GetComponent<Animator>().Play("ShowNotificationStart");
+                        Notification
+                            .GetChild(0)
+                            .transform
+                            .GetChild(0)
+                            .transform
+                            .GetChild(1)
+                            .GetComponent<TextMeshProUGUI>()
+                            .text = "invalid email..";
+                        isPressed = false;
                         yield break;
                     }
                     else
                     {
-                        Player player = gameObject.AddComponent<Player>();
+                        Debug.Log(www.downloadHandler.text);
                         Player.PlayerInfo player1 = JsonUtility.FromJson<Player.PlayerInfo>(
                             www.downloadHandler.text
                         );
+
                         // player.SavePlayerInfo(player1);
                         // player.LoadPlayerInfo(player1);
                         PlayerPrefs.SetInt("id_user", player1.id_user);
@@ -165,19 +208,50 @@ public class LoginController : MonoBehaviour
                         PlayerPrefs.SetString("email", player1.email);
                         PlayerPrefs.SetString("notel", player1.notel);
                         PlayerPrefs.SetString("confirmation", player1.confirmation);
-                        PlayerPrefs.SetInt("isLogin", 1);
+
+                        PlayerPrefs.SetInt("login_logs", player1.login_logs);
                         PlayerManager.instance.AssignInformation();
                         btnLog.interactable = false;
-                        //text.text = www.downloadHandler.text;
-                        //                        CheckIfUserLogin.instance.Reassign();
-                        //Notification.GetComponent<Animator>().Play("ShowNotificationStart");
-                        //transform.root.transform.Find("SignIn").GetComponent<Animator>().Play("OnActiveEnd");
+                        if (player1.login_logs != 0)
+                        {
+                            Notification.GetComponent<Animator>().Play("ShowNotificationStart");
+                            Notification
+                                .GetChild(0)
+                                .transform
+                                .GetChild(0)
+                                .transform
+                                .GetChild(1)
+                                .GetComponent<TextMeshProUGUI>()
+                                .text = "Anda sudah log masuk dari peranti yang lain...";
+
+                            btnLog.interactable = true;
+                            Notice.gameObject.SetActive(false);
+                            isPressed = false;
+                            LogoutPanel.gameObject.SetActive(true);
+                            LogoutPanel
+                                .GetChild(1)
+                                .transform
+                                .GetChild(0)
+                                .transform
+                                .GetChild(1)
+                                .GetComponent<TextMeshProUGUI>()
+                                .text = player1.device_name + " \n(name peranti)";
+                            yield break;
+                        }
+                        else
+                        {
+                            PlayerPrefs.SetInt("isLogin", 1);
+                        }
+
+                        //keluarkan notifikasi dari atas yang user berjaya log masuk
+                        Notification.GetComponent<Animator>().Play("ShowNotificationStart");
+                       
                     }
                 }
-                //show result as binary using []
-                //binaryData = www.downloadHandler.data;
+               
             }
         }
+        //fetch info tentang detail user yang dimasukkan berdasarkan email yang diletak
         using (
             UnityWebRequest www = UnityWebRequest.Post(
                 Domains.instance.Domain + "getinfo.php",
@@ -192,15 +266,14 @@ public class LoginController : MonoBehaviour
             )
             {
                 Debug.Log(www.error);
+
                 //text.text = www.error;
                 PlayerPrefs.SetString("status", "Trial");
             }
             else
             {
-                
                 if (www.downloadHandler.text == "no result")
                 {
-                    
                     Debug.Log(www.downloadHandler.text);
                     PlayerPrefs.SetString("status", "Trial");
                 }
@@ -217,14 +290,11 @@ public class LoginController : MonoBehaviour
                     else
                     {
                         Debug.Log(www.downloadHandler.text);
-                        Player player = gameObject.AddComponent<Player>();
+
                         Player.PlayerSubscription PS =
                             JsonUtility.FromJson<Player.PlayerSubscription>(
                                 www.downloadHandler.text
                             );
-
-                        //  player.SavePlayerSubscription(PS);
-                        //  player.LoadPlayerSubscription(PS);
                         //User Subscription Info
                         PlayerPrefs.SetString("stripe_id", PS.stripe_id);
                         PlayerPrefs.SetString("stripe_sub_id", PS.stripe_sub_id);
@@ -239,19 +309,15 @@ public class LoginController : MonoBehaviour
                         PlayerPrefs.SetString("stripe_phone", PS.stripe_phone);
                         PlayerManager.instance.AssignInformation();
                         btnLog.interactable = false;
-                        //text.text = www.downloadHandler.text;
-                        //   CheckIfUserLogin.instance.Reassign();
+                        
                     }
                 }
-
-                //show result as binary using []
-                //binaryData = www.downloadHandler.data;
             }
             isPressed = false;
-            Notification.GetComponent<Animator>().Play("ShowNotificationStart");
-            //transform.root.transform.Find("SignIn").GetComponent<Animator>().Play("OnActiveEnd");
+            Notification.GetComponent<Animator>().Play("ShowNotificationStart"); //keluarkan notifikasi dari atas screen
             yield return new WaitForSeconds(2f);
-            SceneManager.LoadScene("LamanUtama");
+            Notice.gameObject.SetActive(false);
+            SceneManager.LoadScene("LamanUtama"); //load scene selepas log masuk
         }
     }
 }

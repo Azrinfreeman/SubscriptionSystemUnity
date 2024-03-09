@@ -5,11 +5,14 @@ using UnityEngine;
 
 public class LoadPaymentSite : MonoBehaviour
 {
+    //Code ni daripada official github GPM WebView dan sudah diubah sedikit untuk objective app kita
+    //https://github.com/nhn/gpm.unity/blob/main/docs/WebView/README.en.md
+    
     // FullScreen
     public void OpenPilihPlanPayment()
-    {
+    { //to load a website with GET Method of user email auto inserted the email into the registeration stripe form
         GpmWebView.ShowUrl(
-            Domains.instance.Domain+"pilihplan.php?email="+PlayerPrefs.GetString("email"),
+            Domains.instance.Domain + "pilihplan.php?email=" + PlayerPrefs.GetString("email"),
             new GpmWebViewRequest.Configuration()
             {
                 style = GpmWebViewStyle.FULLSCREEN,
@@ -37,7 +40,12 @@ public class LoadPaymentSite : MonoBehaviour
     public void OpenCustomUrl(string url)
     {
         GpmWebView.ShowUrl(
-            Domains.instance.Domain+url+"?stripe_id="+PlayerPrefs.GetString("stripe_id")+"&price_id="+PlayerPrefs.GetString("price_id"),
+            Domains.instance.Domain
+                + url
+                + "?stripe_id="
+                + PlayerPrefs.GetString("stripe_id")
+                + "&price_id="
+                + PlayerPrefs.GetString("price_id"),
             new GpmWebViewRequest.Configuration()
             {
                 style = GpmWebViewStyle.FULLSCREEN,

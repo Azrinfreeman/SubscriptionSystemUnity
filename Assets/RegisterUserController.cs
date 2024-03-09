@@ -31,12 +31,13 @@ public class RegisterUserController : MonoBehaviour
     public Button btnDaftar;
 
     [SerializeField]
-    private Transform Notice;
+    private Transform Notice; // Big notice in the middle appear on screen when something happened
 
     [SerializeField]
-    private Transform EmailNotice;
+    private Transform EmailNotice; // notification from above to notice the user 
 
-    public bool isLoading;
+    bool isLoading;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -61,7 +62,8 @@ public class RegisterUserController : MonoBehaviour
                 && !string.IsNullOrEmpty(emailText.text)
                 && !string.IsNullOrEmpty(notelText.text)
                 && !string.IsNullOrEmpty(passText.text)
-            && !isLoading)
+                && !isLoading
+            )
             {
                 //Debug.Log("email work");
                 btnDaftar.interactable = true;
@@ -77,14 +79,15 @@ public class RegisterUserController : MonoBehaviour
         }
     }
 
+    //regex for email
     public const string MatchEmailPattern =
         @"^(([\w-]+\.)+[\w-]+|([a-zA-Z]{1}|[\w-]{2,}))@"
         + @"((([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\.([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\."
         + @"([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\.([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])){1}|"
         + @"([a-zA-Z]+[\w-]+\.)+[a-zA-Z]{2,4})$";
 
-    public const string MatchPhoneNumberPattern =
-        @"^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$";
+    //regex for malaysian phone number
+    public const string MatchPhoneNumberPattern = @"^(01)[0-46-9]*[0-9]{7,8}$";
 
     /// <summary>
     /// Checks whether the given Email-Parameter is a valid E-Mail address.
@@ -108,6 +111,7 @@ public class RegisterUserController : MonoBehaviour
             return false;
     }
 
+    //validation check for phone number
     public void CheckPhoneValidation()
     {
         if (IsPhoneNbr(notelText.text))
@@ -123,6 +127,7 @@ public class RegisterUserController : MonoBehaviour
         }
     }
 
+    //validation for email
     public void CheckEmailValidation()
     {
         if (IsEmail(emailText.text))
@@ -138,6 +143,7 @@ public class RegisterUserController : MonoBehaviour
         }
     }
 
+    //submit information to the database
     public void DaftarPengguna()
     {
         //btnDaftar = EventSystem.current.currentSelectedGameObject.transform.GetComponent<Button>();
@@ -146,6 +152,7 @@ public class RegisterUserController : MonoBehaviour
         btnDaftar.interactable = false;
     }
 
+    //process for submitting user data to database
     IEnumerator HantarDataPenggunaKeDB(string Domain)
     {
         string nama = Regex.Replace(
@@ -153,11 +160,12 @@ public class RegisterUserController : MonoBehaviour
             @"((^\w)|(\s|\p{P})\w)",
             match => match.Value.ToUpper()
         );
+        //boolean for loading is true
         isLoading = true;
 
         namaText.text = nama;
+        //active the loading with the spinning animation in the middle with text written "LOADING" under it
         Notice.transform.GetChild(0).gameObject.SetActive(true);
-        //show up loading notice
         Notice.transform.GetChild(0).transform.GetChild(0).gameObject.SetActive(true);
         Notice.transform.GetChild(0).transform.GetChild(1).gameObject.SetActive(false);
         Notice.transform.GetChild(0).transform.GetChild(2).gameObject.SetActive(false);
@@ -171,11 +179,17 @@ public class RegisterUserController : MonoBehaviour
             .text = "LOADING..";
 
         WWWForm form = new WWWForm();
+        //name for POST method
         form.AddField("_name", namaText.text);
         form.AddField("_email", emailText.text);
         form.AddField("_notel", notelText.text);
         form.AddField("_password", passText.text);
-        using (UnityWebRequest www = UnityWebRequest.Post(Domains.instance.Domain+"insertUser.php", form))
+        using (
+            UnityWebRequest www = UnityWebRequest.Post(
+                Domains.instance.Domain + "insertUser.php",
+                form
+            )
+        )
         {
             yield return www.SendWebRequest();
 
@@ -188,7 +202,7 @@ public class RegisterUserController : MonoBehaviour
                 Debug.Log(www.error);
                 //text.text = www.error;
 
-                //show up error notice
+                //active the loading with the red cross in the middle with text written of www.error under it
                 Notice.transform.GetChild(0).transform.GetChild(0).gameObject.SetActive(false);
                 Notice.transform.GetChild(0).transform.GetChild(1).gameObject.SetActive(true);
                 Notice.transform.GetChild(0).transform.GetChild(2).gameObject.SetActive(false);
@@ -200,17 +214,14 @@ public class RegisterUserController : MonoBehaviour
                     .transform
                     .GetComponent<TextMeshProUGUI>()
                     .text = www.error;
-                    
             }
             else
             {
-                //show result as text .text
-                //.Log(www.downloadHandler.text);
-                //if it's an id
+                //if an error occured in the code!
                 if (www.downloadHandler.text == "error")
                 {
-                    //text.text = "Phone number already registred. Please try again!";
-                    //show up loading notice
+                    
+                    //active the loading with the red cross in the middle with text written "Server error" under it
                     Notice
                         .transform
                         .GetChild(0)
@@ -233,10 +244,11 @@ public class RegisterUserController : MonoBehaviour
                 }
                 else
                 {
+                    //if phone number already being used!
                     if (www.downloadHandler.text.Equals("phone number already registered"))
                     {
                         //text.text = "Phone number already registred. Please try again!";
-                        //show up loading notice
+                        //active the loading with the red cross in the middle with text written "phone number already registered" under it
                         Notice
                             .transform
                             .GetChild(0)
@@ -269,10 +281,11 @@ public class RegisterUserController : MonoBehaviour
 
                         // text.text = www.downloadHandler.text;
                     }
+                    //if an email already being used!
                     else if (www.downloadHandler.text.Equals("email already registered"))
                     {
                         //text.text = "Email already registred. Please try again!";
-                        //show up loading notice
+                        //active the loading with the red cross in the middle with text written "email already registered" under it
                         Notice
                             .transform
                             .GetChild(0)
@@ -305,10 +318,11 @@ public class RegisterUserController : MonoBehaviour
 
                         //text.text = www.downloadHandler.text;
                     }
+                    //if the server returned the word "Successful"
                     else if (www.downloadHandler.text.Contains("Successful"))
                     {
-                        //text.text = "Tahniah! Anda berjaya mendaftar!";
-                        //show up loading notice
+                        
+                        //active the loading with the red cross in the middle with text written "Tahniah! Anda Berjaya mendaftar" under it
                         Notice
                             .transform
                             .GetChild(0)
@@ -340,9 +354,7 @@ public class RegisterUserController : MonoBehaviour
                             .text = "Tahniah! Anda berjaya mendaftar!";
 
                         EmailNotice.gameObject.SetActive(true);
-                        //text.text = www.downloadHandler.text;
                         btnDaftar.interactable = false;
-                        
                     }
                 }
                 //show result as binary using []

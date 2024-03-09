@@ -17,7 +17,10 @@ public class SceneController : MonoBehaviour
         
     }
     public void Logout(string scenename){
+        Player player = gameObject.AddComponent<Player>();
+        player.LogoutUser(scenename);
         PlayerPrefs.DeleteAll();
-        SceneManager.LoadScene(scenename);
+        
+        
     }
 }

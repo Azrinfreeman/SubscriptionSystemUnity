@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -10,6 +11,7 @@ public class PlayerManager : MonoBehaviour
     [Header("Load if user already login")]
     //load the scene if user already login
     public string loadScene;
+    public string logMasukScene;
 
     void Awake()
     {
@@ -30,6 +32,7 @@ public class PlayerManager : MonoBehaviour
     public string email;
     public string notel;
     public string confirmation;
+    public int login_logs;
 
     [Header("UserSubscription")]
     public string stripe_id;
@@ -49,19 +52,51 @@ public class PlayerManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        //masa untuk function repeating 10 saat, 10f, boleh tukar sini
+        InvokeRepeating("checkLoginStatus", 0.1f, 10f);
+        //checkLoginStatus();
+    }
+
+    IEnumerator checkingStat()
+    {
+        //isLogin login status that is store in the device while login_logs is stored in a server, if login_logs is 0, isLogin need to be 0 AKA logout.
         if (PlayerPrefs.GetInt("isLogin") > 0)
         {
-            AssignInformation();
-
             //fetch data everytime app start
             Player player = gameObject.AddComponent<Player>();
             player.FetchPlayerSubscription(PlayerPrefs.GetString("email"));
-            SceneManager.LoadScene(loadScene);
+            player.FetchUserInfo();
+            AssignInformation();
+            yield return new WaitForSeconds(0.2f);
+            //check if login status in device is the same as in the server, if not logout the current device
+            if (PlayerPrefs.GetInt("login_logs") > 0)
+            {
+                if (!SceneManager.GetActiveScene().name.Equals(loadScene))
+                {
+                    SceneManager.LoadScene(loadScene);
+                }
+            }
+            else
+            {
+                PlayerPrefs.SetInt("isLogin", 0);
+                if (!SceneManager.GetActiveScene().name.Equals(logMasukScene))
+                {
+                    SceneManager.LoadScene(logMasukScene);
+                }
+            }
         }
         else
         {
-            SceneManager.LoadScene("LogMasuk");
+            if (!SceneManager.GetActiveScene().name.Equals(logMasukScene))
+            {
+                SceneManager.LoadScene(logMasukScene);
+            }
         }
+    }
+
+    void checkLoginStatus()
+    {
+        StartCoroutine(checkingStat());
     }
 
     public void AssignInformation()
@@ -72,7 +107,7 @@ public class PlayerManager : MonoBehaviour
         email = PlayerPrefs.GetString("email");
         notel = PlayerPrefs.GetString("notel");
         confirmation = PlayerPrefs.GetString("confirmation");
-
+        login_logs = PlayerPrefs.GetInt("login_logs");
         //User Subscription Info
         stripe_id = PlayerPrefs.GetString("stripe_id");
         stripe_sub_id = PlayerPrefs.GetString("stripe_sub_id");
@@ -87,5 +122,8 @@ public class PlayerManager : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update() { }
+    void Update()
+    {
+        //checkLoginStatus();
+    }
 }

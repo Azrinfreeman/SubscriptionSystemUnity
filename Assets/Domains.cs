@@ -8,7 +8,8 @@ public class Domains : MonoBehaviour
 
     void Awake()
     {
-        Domain = "https://techiestrading.com/stripe/";
+        //tukar domain di sini jika perlu in the future 
+        Domain = "https://hananaelearning.com/math-modul/";
         DontDestroyOnLoad(this);
         if (!instance)
         {

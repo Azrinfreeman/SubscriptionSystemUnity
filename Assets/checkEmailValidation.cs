@@ -14,10 +14,11 @@ public class checkEmailValidation : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(!PlayerPrefs.GetString("confirmation").Equals("1")){
-            transform.GetComponent<Button>().interactable = false;
-        }else{
+        //check sama ada user sudah verify account email mereka, jika sudah, user boleh buat langganan plan 
+        if(PlayerPrefs.GetString("confirmation").Equals("1")){
             transform.GetComponent<Button>().interactable = true;
+        }else{
+            transform.GetComponent<Button>().interactable = false;
         }
     }
 }

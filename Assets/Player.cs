@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
 using System.Xml;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
@@ -14,6 +16,9 @@ public class Player : MonoBehaviour
         public string email;
         public string notel;
         public string confirmation;
+        public int login_logs;
+
+        public string device_name;
     }
 
     public class PlayerSubscription
@@ -34,6 +39,9 @@ public class Player : MonoBehaviour
         public string status;
         public string stripe_phone;
     }
+
+    // Sets a string value in PlayerPrefs after encrypting it
+
 
     /*
     
@@ -277,6 +285,39 @@ public class Player : MonoBehaviour
         StartCoroutine(fetchUser());
     }
 
+    public void LogoutUser(string sceneName)
+    {
+        StartCoroutine(Logout(sceneName));
+    }
+
+    IEnumerator Logout(string sceneName)
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("id_user", PlayerPrefs.GetInt("id_user"));
+        using (
+            UnityWebRequest www = UnityWebRequest.Post(Domains.instance.Domain + "logout.php", form)
+        )
+        {
+            yield return www.SendWebRequest();
+            if (
+                www.result == UnityWebRequest.Result.ConnectionError
+                || www.result == UnityWebRequest.Result.ProtocolError
+            )
+            {
+                Debug.Log(www.error);
+                //text.text = www.error;
+            }
+            else
+            {
+                if (www.downloadHandler.text == "logout")
+                {
+                    Debug.Log(www.downloadHandler.text);
+                    SceneManager.LoadScene(sceneName);
+                }
+            }
+        }
+    }
+
     IEnumerator fetchUser()
     {
         WWWForm form = new WWWForm();
@@ -315,12 +356,12 @@ public class Player : MonoBehaviour
                     PlayerInfo player = JsonUtility.FromJson<PlayerInfo>(www.downloadHandler.text);
 
                     //User Subscription Info
-                    PlayerPrefs.SetString("name", player.name);
+                    //PlayerPrefs.SetString("name", player.name);
                     PlayerPrefs.SetString("email", player.email);
                     PlayerPrefs.SetString("notel", player.notel);
                     PlayerPrefs.SetString("confirmation", player.confirmation);
-
-                    PlayerManager.instance.AssignInformation();
+                    PlayerPrefs.SetInt("login_logs", player.login_logs);
+                    //PlayerManager.instance.AssignInformation();
                 }
             }
         }

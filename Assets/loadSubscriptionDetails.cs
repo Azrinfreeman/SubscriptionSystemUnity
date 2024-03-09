@@ -21,20 +21,7 @@ public class loadSubscriptionDetails : MonoBehaviour
     {
         if (!PlayerPrefs.GetString("plan").Equals(""))
         {
-            // Add the number of seconds in UNIX timestamp to be converted.
-
-            // The dateTime now contains the right date/time so to format the string,
-            // use the standard formatting methods of the DateTime object.
-            //start_date = start_date.AddSeconds(
-             //   Convert.ToDouble(PlayerPrefs.GetString("start_date"))
-            //);
-            //printDate1 = start_date.ToShortTimeString() + " " + start_date.ToShortDateString();
-            //end_date = end_date.AddSeconds(Convert.ToDouble(PlayerPrefs.GetString("end_date")));
-            //printDate2 = end_date.ToShortTimeString() + " " + end_date.ToShortDateString();
-
-            // Print the date and time
-            //Debug.Log(printDate1);
-
+        
             //load details into profile
             transform.GetChild(0).GetComponent<TMP_InputField>().text = PlayerPrefs.GetString(
                 "plan"
@@ -65,9 +52,6 @@ public class loadSubscriptionDetails : MonoBehaviour
     {
         if (!PlayerPrefs.GetString("plan").Equals(""))
         {
-            //load details into profile
-            // Print the date and time
-            //load details into profile
 
 
             transform.GetChild(0).GetComponent<TMP_InputField>().text = PlayerPrefs.GetString(
