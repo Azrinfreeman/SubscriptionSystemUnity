@@ -2903,7 +2903,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 430.605, y: -252.02626}
+  m_AnchoredPosition: {x: 430.605, y: -252.02623}
   m_SizeDelta: {x: 798.9297, y: 109.1854}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &458716111
@@ -3706,7 +3706,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   loadScene: LamanUtama
-  logMasukScene: 
+  logMasukScene: LogMasuk
   id_user: 0
   nama: 
   email: 
@@ -8514,7 +8514,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 430.605, y: -130.00876}
+  m_AnchoredPosition: {x: 430.605, y: -130.00874}
   m_SizeDelta: {x: 721.6787, y: 109.185394}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1460673932
@@ -10882,7 +10882,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 430.605, y: -374.04376}
+  m_AnchoredPosition: {x: 430.605, y: -374.04373}
   m_SizeDelta: {x: 798.9297, y: 109.1854}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1954428579

@@ -322,7 +322,7 @@ public class Player : MonoBehaviour
     {
         WWWForm form = new WWWForm();
         form.AddField("id_user", PlayerPrefs.GetInt("id_user"));
-
+        form.AddField("_game_name", "Modul 2"); // Modul 1 atau Modul 2
         using (
             UnityWebRequest www = UnityWebRequest.Post(
                 Domains.instance.Domain + "getinfouser.php",
@@ -371,7 +371,7 @@ public class Player : MonoBehaviour
     {
         WWWForm form = new WWWForm();
         form.AddField("_email", emailText);
-
+        form.AddField("_game_name", "Modul 2"); // Modul 1 atau Modul 2
         using (
             UnityWebRequest www = UnityWebRequest.Post(
                 Domains.instance.Domain + "getinfo.php",
@@ -395,8 +395,21 @@ public class Player : MonoBehaviour
                 //if it's an id
                 if (www.downloadHandler.text == "no result")
                 {
+                    //tambah
                     //text.text = "no result";
                     Debug.Log(www.downloadHandler.text);
+                    PlayerPrefs.DeleteKey("stripe_id");
+                    PlayerPrefs.DeleteKey("stripe_sub_id");
+                    PlayerPrefs.DeleteKey("pmc_id");
+                    PlayerPrefs.DeleteKey("product_id");
+                    PlayerPrefs.DeleteKey("price_id");
+                    PlayerPrefs.DeleteKey("start_date");
+                    PlayerPrefs.DeleteKey("end_date");
+                    PlayerPrefs.DeleteKey("plan");
+                    PlayerPrefs.DeleteKey("plan_desc");
+                    PlayerPrefs.DeleteKey("status");
+                    PlayerPrefs.DeleteKey("stripe_phone");
+                    PlayerManager.instance.AssignInformation();
                 }
                 else
                 {

@@ -53,7 +53,7 @@ public class PlayerManager : MonoBehaviour
     void Start()
     {
         //masa untuk function repeating 10 saat, 10f, boleh tukar sini
-        InvokeRepeating("checkLoginStatus", 0.1f, 10f);
+        InvokeRepeating("checkLoginStatus", 0.1f, 4f);
         //checkLoginStatus();
     }
 
@@ -64,8 +64,8 @@ public class PlayerManager : MonoBehaviour
         {
             //fetch data everytime app start
             Player player = gameObject.AddComponent<Player>();
-            player.FetchPlayerSubscription(PlayerPrefs.GetString("email"));
             player.FetchUserInfo();
+            player.FetchPlayerSubscription(PlayerPrefs.GetString("email"));
             AssignInformation();
             yield return new WaitForSeconds(0.2f);
             //check if login status in device is the same as in the server, if not logout the current device

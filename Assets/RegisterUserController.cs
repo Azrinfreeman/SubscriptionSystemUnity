@@ -34,7 +34,7 @@ public class RegisterUserController : MonoBehaviour
     private Transform Notice; // Big notice in the middle appear on screen when something happened
 
     [SerializeField]
-    private Transform EmailNotice; // notification from above to notice the user 
+    private Transform EmailNotice; // notification from above to notice the user
 
     bool isLoading;
 
@@ -184,6 +184,7 @@ public class RegisterUserController : MonoBehaviour
         form.AddField("_email", emailText.text);
         form.AddField("_notel", notelText.text);
         form.AddField("_password", passText.text);
+        form.AddField("_game_name", "Modul 2"); // Modul 1 atau Modul 2
         using (
             UnityWebRequest www = UnityWebRequest.Post(
                 Domains.instance.Domain + "insertUser.php",
@@ -220,15 +221,8 @@ public class RegisterUserController : MonoBehaviour
                 //if an error occured in the code!
                 if (www.downloadHandler.text == "error")
                 {
-                    
                     //active the loading with the red cross in the middle with text written "Server error" under it
-                    Notice
-                        .transform
-                        .GetChild(0)
-                        .transform
-                        .GetChild(0)
-                        .gameObject
-                        .SetActive(false);
+                    Notice.transform.GetChild(0).transform.GetChild(0).gameObject.SetActive(false);
                     Notice.transform.GetChild(0).transform.GetChild(1).gameObject.SetActive(true);
                     Notice.transform.GetChild(0).transform.GetChild(2).gameObject.SetActive(false);
                     Notice
@@ -321,7 +315,6 @@ public class RegisterUserController : MonoBehaviour
                     //if the server returned the word "Successful"
                     else if (www.downloadHandler.text.Contains("Successful"))
                     {
-                        
                         //active the loading with the red cross in the middle with text written "Tahniah! Anda Berjaya mendaftar" under it
                         Notice
                             .transform

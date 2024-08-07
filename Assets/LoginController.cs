@@ -124,7 +124,7 @@ public class LoginController : MonoBehaviour
         form.AddField("_email", emailText.text);
         form.AddField("_password", passText.text);
         form.AddField("_device_name", SystemInfo.deviceName + " " + SystemInfo.deviceModel);
-
+        form.AddField("_game_name", "Modul 2"); // Modul 1 atau Modul 2
         //check detail yang dimasukkan oleh user, email atau password itu valid ke tak
         using (
             UnityWebRequest www = UnityWebRequest.Post(
@@ -245,10 +245,8 @@ public class LoginController : MonoBehaviour
 
                         //keluarkan notifikasi dari atas yang user berjaya log masuk
                         Notification.GetComponent<Animator>().Play("ShowNotificationStart");
-                       
                     }
                 }
-               
             }
         }
         //fetch info tentang detail user yang dimasukkan berdasarkan email yang diletak
@@ -309,7 +307,6 @@ public class LoginController : MonoBehaviour
                         PlayerPrefs.SetString("stripe_phone", PS.stripe_phone);
                         PlayerManager.instance.AssignInformation();
                         btnLog.interactable = false;
-                        
                     }
                 }
             }
