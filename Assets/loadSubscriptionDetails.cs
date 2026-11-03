@@ -1,100 +1,71 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
 public class loadSubscriptionDetails : MonoBehaviour
 {
-    // This is an example of a UNIX timestamp for the date/time 11-04-2005 09:25.
-
-
-    // First make a System.DateTime equivalent to the UNIX Epoch.
-    System.DateTime start_date = new System.DateTime(1970, 1, 1, 0, 0, 0, 0);
-    System.DateTime end_date = new System.DateTime(1970, 1, 1, 0, 0, 0, 0);
-
-    private string printDate1;
-    private string printDate2;
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        if (!PlayerPrefs.GetString("plan").Equals(""))
-        {
-        
-            //load details into profile
-            transform.GetChild(0).GetComponent<TMP_InputField>().text = PlayerPrefs.GetString(
-                "plan"
-            );
-            transform.GetChild(1).GetComponent<TMP_InputField>().text =
-                "Started at: " + PlayerPrefs.GetString("start_date");
-            transform.GetChild(2).GetComponent<TMP_InputField>().text =
-                "Canceled at: " + PlayerPrefs.GetString("end_date");
-            if (!PlayerPrefs.GetString("status").Equals("active"))
-            {
-                transform.GetChild(3).GetComponent<TMP_InputField>().text =
-                    "Subscription Status: " + PlayerPrefs.GetString("status").ToUpper();
-                transform.GetChild(3).transform.GetChild(1).gameObject.SetActive(true);
-                transform.GetChild(3).transform.GetChild(2).gameObject.SetActive(false);
-            }
-            else
-            {
-                transform.GetChild(3).GetComponent<TMP_InputField>().text =
-                    "Subscription Status: " + PlayerPrefs.GetString("status").ToUpper();
-                transform.GetChild(3).transform.GetChild(1).gameObject.SetActive(false);
-                transform.GetChild(3).transform.GetChild(2).gameObject.SetActive(true);
-            }
-        }
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if (!PlayerPrefs.GetString("plan").Equals(""))
-        {
-
-
-            transform.GetChild(0).GetComponent<TMP_InputField>().text = PlayerPrefs.GetString(
-                "plan"
-            );
-            transform.GetChild(1).GetComponent<TMP_InputField>().text =
-                "Started at : " + PlayerPrefs.GetString("start_date");
-            transform.GetChild(2).GetComponent<TMP_InputField>().text =
-                "Canceled at : " + PlayerPrefs.GetString("end_date");
-            if (!PlayerPrefs.GetString("status").Equals("active"))
-            {
-                transform.GetChild(3).GetComponent<TMP_InputField>().text =
-                    "Subscription Status: " + PlayerPrefs.GetString("status").ToUpper();
-                transform.GetChild(3).transform.GetChild(1).gameObject.SetActive(true);
-                transform.GetChild(3).transform.GetChild(2).gameObject.SetActive(false);
-            }
-            else
-            {
-                transform.GetChild(3).GetComponent<TMP_InputField>().text =
-                    "Subscription Status: " + PlayerPrefs.GetString("status").ToUpper();
-                transform.GetChild(3).transform.GetChild(1).gameObject.SetActive(false);
-                transform.GetChild(3).transform.GetChild(2).gameObject.SetActive(true);
-            }
-        }
-        else
-        {
-            transform.GetChild(0).GetComponent<TMP_InputField>().text = "No detail";
-            transform.GetChild(1).GetComponent<TMP_InputField>().text = "No detail";
-            transform.GetChild(2).GetComponent<TMP_InputField>().text = "No detail";
-
-            transform.GetChild(3).GetComponent<TMP_InputField>().text =
-                "Subscription Status: Trial";
-            transform.GetChild(3).transform.GetChild(1).gameObject.SetActive(true);
-            transform.GetChild(3).transform.GetChild(2).gameObject.SetActive(false);
-        }
-    }
-
+    [SerializeField]
+    TMP_InputField planField;
+    [SerializeField]
+    TMP_InputField startField;
+    [SerializeField]
+    TMP_InputField endField;
+    [SerializeField]
+    TMP_InputField statusField;
+    [SerializeField]
+    GameObject inactiveIcon;
+    [SerializeField]
+    GameObject activeIcon;
     void OnEnable()
     {
-        //fetch subscription data using FetchPlayerSubscription function
-        Player player = gameObject.AddComponent<Player>();
-        player.FetchPlayerSubscription(PlayerPrefs.GetString("email"));
+        PlayerManager.StateChanged += Render;
+        Render();
+        if (PlayerManager.instance != null)
+            PlayerManager.instance.RequestRefresh();
+    }
 
-        
+    public void Reassign()
+    {
+        if (PlayerManager.instance != null)
+            PlayerManager.instance.RequestRefresh();
+    }
+
+    void Render()
+    {
+        var manager = PlayerManager.instance;
+        bool available = manager != null && manager.SubscriptionFresh;
+        bool active = available && manager.CanAccessPremium();
+        Set(planField, manager != null && !string.IsNullOrEmpty(manager.plan) ? manager.plan : "Tiada pelan");
+        Set(startField, "Bermula: " + Date(manager != null ? manager.start_date : null));
+        Set(endField, "Akses tamat: " + Date(manager != null ? manager.end_date : null));
+        Set(statusField, StatusMessage(manager, available));
+        if (inactiveIcon != null)
+            inactiveIcon.SetActive(!active);
+        if (activeIcon != null)
+            activeIcon.SetActive(active);
+    }
+
+    static string StatusMessage(PlayerManager manager, bool available)
+    {
+        // Keep request failures visible before displaying any cached status.
+        if (!string.IsNullOrEmpty(manager?.LastError)) return manager.LastError;
+        if (manager != null && manager.IsRefreshing) return "Menyemak langganan...";
+        if (!available) return "Status langganan belum tersedia";
+        string status = string.IsNullOrEmpty(manager.status) ? "TIADA LANGGANAN" : manager.status.ToUpperInvariant();
+        return "Status langganan: " + status;
+    }
+
+    static string Date(string value) => string.IsNullOrWhiteSpace(value) || value == "0" ? "—" : value;
+    static void Set(TMP_InputField field, string value)
+    {
+        if (field != null)
+        {
+            field.readOnly = true;
+            field.SetTextWithoutNotify(value ?? "");
+        }
+    }
+
+    void OnDisable()
+    {
+        PlayerManager.StateChanged -= Render;
     }
 }

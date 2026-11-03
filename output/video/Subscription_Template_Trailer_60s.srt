@@ -1,0 +1,59 @@
+1
+00:00:00,000 --> 00:00:05,000
+Start with accounts and subscriptions built.
+Configure your backend and Stripe.
+
+2
+00:00:05,000 --> 00:00:10,000
+Edit the Malay menus in Unity scenes
+and the shared button prefab.
+
+3
+00:00:10,000 --> 00:00:15,000
+Choose Daftar akaun to register.
+Kembali takes you back.
+
+4
+00:00:15,000 --> 00:00:20,000
+Log masuk opens sign-in.
+Find account actions in the player menu.
+
+5
+00:00:20,000 --> 00:00:25,000
+View your profile and send a
+verification email from the same panel.
+
+6
+00:00:25,000 --> 00:00:30,000
+Langganan saya shows your plan.
+Langgan opens the billing handoff.
+
+7
+00:00:30,000 --> 00:00:35,000
+Illustrated: a ticket opens checkout.
+No live Stripe transaction is shown.
+
+8
+00:00:35,000 --> 00:00:40,000
+Browser return never proves payment.
+The server confirms subscription access.
+
+9
+00:00:40,000 --> 00:00:45,000
+The UI shows current manager state.
+Local preferences never prove payment.
+
+10
+00:00:45,000 --> 00:00:50,000
+Navigate with keys, reduce motion,
+and recover access on another device.
+
+11
+00:00:50,000 --> 00:00:55,000
+Change colors, labels and timing
+with ordinary Unity editing tools.
+
+12
+00:00:55,000 --> 00:01:00,000
+Customize menus. Connect PHP and Stripe.
+Build your game.

@@ -1,0 +1,87 @@
+using UnityEngine;
+using UnityEditor;
+
+// Copy to Assets/Editor/SubscriptionTrailerCapture.cs to use the ordinary Editor menu.
+public static class SubscriptionTrailerCapture
+{
+    [MenuItem("Tools/Subscription System/Capture 60-second trailer screens")]
+    public static void Capture()
+    {
+        Debug.Log(CaptureSavedScenes());
+    }
+
+    static object CaptureSavedScenes()
+    {
+        if (EditorApplication.isPlaying) throw new System.InvalidOperationException("Stop Play mode first.");
+        if (UnityEditor.SceneManagement.EditorSceneManager.sceneCount != 1) throw new System.InvalidOperationException("Capture with only one saved scene open.");
+        var original = UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene();
+        if (original.isDirty) throw new System.InvalidOperationException("Save scene changes before capture.");
+        var originalPath = original.path;
+        var selectedPath = Selection.activeObject == null ? "" : AssetDatabase.GetAssetPath(Selection.activeObject);
+        var output = "Docs/Trailer60/public/screens/";
+        var captures = new System.Collections.Generic.List<string>();
+        try
+        {
+            foreach (var sceneName in new [] { "LogMasuk", "LamanUtama" })
+            {
+                UnityEditor.SceneManagement.EditorSceneManager.OpenScene("Assets/Scenes/" + sceneName + ".unity");
+                var canvas = GameObject.Find("Canvas");
+                var safe = canvas.transform.Find("SafeArea");
+                var flows = safe.GetComponentsInChildren<GameUIPanelFlow>(true);
+                foreach (var flow in flows) flow.panelRoot.SetActive(false);
+                // Capture original artwork without introducing a separate promotional skin.
+                safe.gameObject.SetActive(false);
+                foreach (var ambient in canvas.GetComponentsInChildren<GameUIAmbient>(true)) ambient.gameObject.SetActive(false);
+                var background = output + (sceneName == "LogMasuk" ? "entry-art.png" : "home-art.png");
+                GameUIRevampTools.Capture(background, 3840, 2160);
+                safe.gameObject.SetActive(true);
+                if (sceneName == "LamanUtama")
+                {
+                    foreach (var text in safe.GetComponentsInChildren<TMPro.TMP_Text>(true))
+                        if (text.text == "NAMA PENGGUNA") text.text = "Pemain demo";
+                }
+                var main = output + (sceneName == "LogMasuk" ? "entry.png" : "home.png");
+                GameUIRevampTools.Capture(main, 3840, 2160);
+                captures.Add(main);
+                foreach (var flow in flows)
+                {
+                    foreach (var other in flows) other.panelRoot.SetActive(false);
+                    flow.panelRoot.SetActive(true);
+                    var group = flow.GetComponent<CanvasGroup>();
+                    if (group != null) group.alpha = 1;
+                    flow.transform.localScale = Vector3.one;
+                    foreach (var field in flow.GetComponentsInChildren<TMPro.TMP_InputField>(true))
+                    {
+                        if (field.name == "Password") continue;
+                        if (flow.panelRoot.name == "Profile")
+                        {
+                            if (field.name == "Name") field.SetTextWithoutNotify("Pemain Demo");
+                            else if (field.name == "Email") field.SetTextWithoutNotify("player@example.com");
+                            else if (field.name == "NoTel") field.SetTextWithoutNotify("0123456789");
+                            else field.SetTextWithoutNotify("Belum disahkan");
+                        }
+                        else if (flow.panelRoot.name == "SubscriptionDetails")
+                            field.SetTextWithoutNotify(field.name == "Name" ? "Pelan demo" : field.name == "Status" ? "Belum aktif" : "Contoh");
+                        if (flow.panelRoot.name == "Profile" || flow.panelRoot.name == "SubscriptionDetails")
+                        {
+                            var yes = field.transform.Find("yes");
+                            var no = field.transform.Find("no");
+                            if (yes != null) yes.gameObject.SetActive(false);
+                            if (no != null) no.gameObject.SetActive(true);
+                        }
+                    }
+                    Canvas.ForceUpdateCanvases();
+                    var filename = output + flow.panelRoot.name + ".png";
+                    GameUIRevampTools.Capture(filename, 3840, 2160);
+                    captures.Add(filename);
+                }
+            }
+        }
+        finally
+        {
+            UnityEditor.SceneManagement.EditorSceneManager.OpenScene(originalPath);
+            if (!string.IsNullOrEmpty(selectedPath)) Selection.activeObject = AssetDatabase.LoadMainAssetAtPath(selectedPath);
+        }
+        return new { captures = captures.ToArray(), restoredScene = originalPath, sampleData = true, liveRequests = false };
+    }
+}

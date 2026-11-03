@@ -1,0 +1,26 @@
+---
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    primaryColor: "#FFFFFF"
+    primaryTextColor: "#203645"
+    primaryBorderColor: "#205F75"
+    lineColor: "#205F75"
+    fontFamily: "Segoe UI, Arial, sans-serif"
+---
+flowchart TB
+  accTitle: Choose the source that owns the change
+  accDescr: Proposed editing workflow with four destinations for setup, appearance, layout and application rules.
+  Change["What are you changing?"]
+  Settings["SubscriptionSettings.asset"]
+  Theme["DefaultGameUITheme.asset"]
+  Scenes["Scenes and MenuButtonFace.prefab"]
+  Rules["Account scripts and PHP source"]
+  Change -->|"Configure backend and game key"| Settings
+  Change -->|"Tune colors and motion duration"| Theme
+  Change -->|"Edit layout and labels"| Scenes
+  Change -->|"Change validated application rules"| Rules
+  classDef accent fill:#205F75,stroke:#205F75,color:#FFFFFF
+  class Change accent

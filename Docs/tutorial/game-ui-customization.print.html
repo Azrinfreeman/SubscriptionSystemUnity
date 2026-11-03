@@ -1,0 +1,126 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Customize the game menus</title><style>/* Shared print design. Edit Markdown for content; edit this file for appearance. */
+:root{--ink:#203645;--primary:#205f75;--field:#eaf3f6;--rule:#cad9df}
+*{box-sizing:border-box}
+@page{size:Letter;margin:0}
+body{margin:0;background:#eef1f3;color:var(--ink);font:11pt/1.45 'Segoe UI',sans-serif}
+.page{width:8.5in;height:11in;padding:.5in .8in .4in;background:white;display:grid;grid-template-rows:auto 1fr auto;overflow:hidden;break-after:page;margin:20px auto}
+.page:last-child{break-after:auto}
+.running-header{display:flex;justify-content:space-between;gap:20px;border-bottom:1px solid var(--rule);padding-bottom:12px;margin-bottom:22px;font-size:9pt;color:var(--primary)}
+.content{min-height:0;overflow:hidden;padding-bottom:.3in;overflow-wrap:anywhere}
+.page-footer{border-top:1px solid var(--rule);padding-top:10px;display:flex;justify-content:space-between;gap:12px;font-size:8pt;color:var(--ink)}
+h1,h2,h3{font-family:Georgia,serif;font-weight:normal;line-height:1.2;color:var(--primary)}
+h1{font-size:30pt;margin:0 0 18px;max-width:24ch}
+h2{font-size:19pt;margin:24px 0 12px}
+h3{font-size:14pt;margin:18px 0 9px}
+.content>:first-child{margin-top:0}
+p{margin:0 0 13px}ul,ol{padding-left:22px;margin:0 0 13px}li{padding-left:3px;margin-bottom:9px}
+a{color:var(--primary);text-underline-offset:3px}a:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+code{font:9pt/1.45 Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--field);padding:13px 15px;margin:0 0 15px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.45}
+pre code{white-space:pre-wrap}
+table{width:100%;border-collapse:collapse;font-size:10pt;line-height:1.4;margin:0 0 15px;table-layout:fixed}
+th,td{text-align:left;vertical-align:top;padding:9px 8px;border-bottom:1px solid var(--rule);overflow-wrap:anywhere}
+th{font-weight:600;color:var(--primary);border-top:1px solid var(--rule)}
+th:first-child,td:first-child{padding-left:0;width:40%}
+.reference{font-size:9pt;color:var(--ink)}
+figure{margin:14px 0 18px}figure img{display:block;width:100%;height:auto}figcaption{margin-top:10px;font-size:9pt;line-height:1.4}
+@media print{body{background:white;-webkit-print-color-adjust:exact;print-color-adjust:exact}.page{margin:0}}
+</style><script type="text/javascript">/* Move complete text blocks into measured pages. Fail rather than clip a block. */
+async function paginateTutorial(title, sourceName) {
+  await document.fonts.ready;
+  const source = document.querySelector('#source');
+  const blocks = [];
+  for (const node of [...source.children]) {
+    if (node.matches('table')) {
+      // Row-sized units repeat the column headings on each page.
+      for (const row of node.querySelectorAll('tbody tr')) {
+        const table = node.cloneNode(false);
+        table.append(node.querySelector('thead').cloneNode(true));
+        const body = document.createElement('tbody');
+        body.append(row.cloneNode(true));
+        table.append(body);
+        blocks.push(table);
+      }
+    } else if (node.matches('ol,ul')) {
+      let number = Number(node.getAttribute('start') || 1);
+      for (const item of node.children) {
+        const list = node.cloneNode(false);
+        if (node.matches('ol')) list.start = number++;
+        list.append(item.cloneNode(true));
+        blocks.push(list);
+      }
+    } else blocks.push(node);
+  }
+  source.remove();
+  let content;
+  const pages = [];
+  function newPage() {
+    const page = document.createElement('section');
+    page.className = 'page';
+    const header = document.createElement('header');
+    header.className = 'running-header';
+    const brand = document.createElement('span');
+    brand.textContent = 'Subscription System Unity';
+    const guide = document.createElement('span');
+    guide.textContent = title;
+    header.append(brand, guide);
+    content = document.createElement('main');
+    content.className = 'content';
+    const footer = document.createElement('footer');
+    footer.className = 'page-footer';
+    const source = document.createElement('span');
+    source.textContent = 'Editable source: Docs/tutorial/' + sourceName;
+    footer.append(source, document.createElement('span'));
+    page.append(header, content, footer);
+    document.body.append(page);
+    pages.push(page);
+  }
+  function fits() {return content.scrollHeight <= content.clientHeight + 1;}
+  function place(block) {
+    const previous = content.lastElementChild;
+    if (block.matches('table') && previous?.matches('table') &&
+        block.querySelector('thead').innerHTML === previous.querySelector('thead').innerHTML) {
+      const rows = [...block.querySelector('tbody').children];
+      previous.querySelector('tbody').append(...rows);
+      return () => block.querySelector('tbody').append(...rows);
+    }
+    if (block.matches('ol,ul') && previous?.tagName === block.tagName &&
+        (block.matches('ul') || block.start === previous.start + previous.children.length)) {
+      const items = [...block.children];
+      previous.append(...items);
+      return () => block.append(...items);
+    }
+    content.append(block);
+    return () => block.remove();
+  }
+  newPage();
+  for (let i = 0; i < blocks.length; i++) {
+    const block = blocks[i];
+    // The short rebuild instructions belong together on the closing page.
+    if (block.matches('h2') && /export/i.test(block.textContent) && content.children.length) {
+      const undoSection = [];
+      for (let j = i; j < blocks.length; j++) {
+        if (j > i && blocks[j].matches('h2')) break;
+        undoSection.push(place(blocks[j]));
+      }
+      const sectionOverflows = !fits();
+      undoSection.reverse().forEach(undo => undo());
+      if (sectionOverflows) newPage();
+    }
+    const undo = place(block);
+    const next = block.matches('h1,h2,h3') ? blocks[i + 1] : null;
+    const undoNext = next ? place(next) : null;
+    const overflow = !fits();
+    if (undoNext) undoNext();
+    if (overflow) {
+      undo();
+      if (!content.children.length) throw Error('Block exceeds page: ' + block.textContent);
+      newPage();
+      place(block);
+      if (!fits()) throw Error('Block exceeds page: ' + block.textContent);
+    }
+  }
+  pages.forEach((page, i) => page.querySelector('footer').lastChild.textContent = `${i + 1} / ${pages.length}`);
+  return pages.length;
+}
+</script></head><body><section class="page"><header class="running-header"><span>Subscription System Unity</span><span>Customize the game menus</span></header><main class="content"><h1 id="customize-the-game-menus">Customize the game menus</h1><p>Edit the theme asset, shared button face and the two original scenes to change the finished menus. Unity 2022.3.62f3, uGUI and TextMeshPro are already configured; no new package is required.</p><h2 id="contents">Contents</h2><ul><li><a href="#find-the-source">Find the source</a></li><li><a href="#change-a-color-and-a-menu-label">Change a color and a menu label</a></li><li><a href="#keep-color-roles-readable">Keep color roles readable</a></li><li><a href="#understand-navigation-and-feedback">Understand navigation and feedback</a></li><li><a href="#run-and-verify">Run and verify</a></li><li><a href="#export-this-tutorial">Export this tutorial</a></li></ul><h2 id="find-the-source">Find the source</h2><table><thead><tr><th scope="col">Source</th><th scope="col">Responsibility</th></tr></thead><tbody><tr><td>Assets/Scenes/LogMasuk.unity</td><td>Entry, login, registration and device-conflict presentation</td></tr><tr><td>Assets/Scenes/LamanUtama.unity</td><td>Player menu, profile, subscription and logout confirmation</td></tr><tr><td>Assets/UI/Settings/DefaultGameUITheme.asset</td><td>Colors and feedback/panel durations, with Inspector role/tooltips</td></tr><tr><td>Assets/UI/Prefabs/MenuButtonFace.prefab</td><td>Shared button surface, label, focus outline and lower edge</td></tr><tr><td>Assets/UI/Scripts/</td><td>Theme bindings, input feedback, panel transitions, safe area, preferences and access summary</td></tr><tr><td>Assets/LoginController.cs and Assets/RegisterUserController.cs</td><td>Validation, request guards and persistent inline responses</td></tr><tr><td>Assets/Editor/SubscriptionPlayChecks.cs</td><td>Offline account and panel interaction checks</td></tr></tbody></table></main><footer class="page-footer"><span>Editable source: Docs/tutorial/game-ui-customization.md</span><span>1 / 5</span></footer></section><section class="page"><header class="running-header"><span>Subscription System Unity</span><span>Customize the game menus</span></header><main class="content"><p>The scene hierarchy under Canvas/SafeArea remains editable in the normal RectTransform Inspector. Buttons keep their original controller events. Their Face child is a prefab instance. Profile and subscription fields remain read-only TMP_InputFields because the existing loaders bind to those components.</p><p>GameUIRevampTools.Apply is a one-time migration, guarded against reapplication. Routine customization uses the scene, prefab and theme directly. Capture is an editor helper for offscreen screenshots. Generated PNGs, HTML and the Windows build are outputs, not layout sources.</p><h2 id="change-a-color-and-a-menu-label">Change a color and a menu label</h2><ol start="1"><li>Open LogMasuk. Select Assets/UI/Settings/DefaultGameUITheme.asset and change Primary to #286C55. Loaded theme bindings update; unopened scenes apply it on enable. The main buttons should become green while their text stays white. This example gives white labels a measured contrast of 6.24:1; recalculate when choosing another color.</li><li>Expand Canvas/SafeArea/UtkSignIn/Button/Face/Label and edit its TMP text to Masuk. Keep that label as a scene override so the shared prefab does not rename every action.</li><li>Select the Button object. GameUIButtonFeedback points to Face; the button's own rectangle stays fixed. Adjust Feedback Seconds on the theme from 0.12 to 0.18 to soften hover/press response. Panel Seconds separately controls opening transitions.</li><li>Enter Play mode and open the login form. Confirm the changed button, then inspect the same theme in LamanUtama. Save intentional scene/asset changes after leaving Play mode.</li></ol><p>The default title is Dunia Anda. Change Canvas/SafeArea/title in LogMasuk to your product name. It is separate from SubscriptionSettings.gameIdentifier, which remains an integration setting. Replace existing flattened background PNGs through their Image references; editable illustration originals were not invented.</p><p>To add an action, duplicate an existing scene Button, edit Face/Label and assign its onClick event in the Inspector. Check the target component and method rather than copying an unrelated billing action. Keep decorative graphics' Raycast Target off. Add reusable visual changes in Prefab Mode; preserve scene-specific text/theme-role overrides.</p><h2 id="keep-color-roles-readable">Keep color roles readable</h2><p><code>GameUIThemeBinding.Role</code> selects one color from the assigned theme for its Graphic or TMP component. Keep the same theme in both scenes. The enum values are explicit so existing scene bindings retain their meaning; do not reorder them when extending the system.</p></main><footer class="page-footer"><span>Editable source: Docs/tutorial/game-ui-customization.md</span><span>2 / 5</span></footer></section><section class="page"><header class="running-header"><span>Subscription System Unity</span><span>Customize the game menus</span></header><main class="content"><table><thead><tr><th scope="col">Theme field</th><th scope="col">Role and default</th></tr></thead><tbody><tr><td>Ink</td><td>Body text and secondary focus, #203645</td></tr><tr><td>Primary</td><td>Main action surface with white label, #205F75</td></tr><tr><td>Surface / Field</td><td>White panels / pale #EAF3F6 input and detail rows</td></tr><tr><td>Highlight</td><td>Gold #F2BF50 focus outline on primary controls</td></tr><tr><td>Error</td><td>Error text, #A83242, paired with a useful message</td></tr></tbody></table><p>White on Primary measures 7.11:1, Ink on Field 11.13:1 and Error on white 6.56:1. Gold on Primary is 4.18:1, suitable for the focus indicator but below the 4.5:1 target for normal-sized text. Use color with labels or focus outlines rather than as the only status signal. These menus retain their existing light surfaces; no dark mode is implemented.</p><p><code>GameUIButtonFeedback</code> caches the assigned Face's stable components in Awake. Assign a replacement Face in the Inspector before Play, then test its outline and fixed button hit area. Edit Prefab Mode for shared visuals and scene overrides for action labels. For profile rows and validation policy, use the account customization tutorial <span class="reference">(<code>account-flow-customization.html</code>)</span>.</p><h2 id="understand-navigation-and-feedback">Understand navigation and feedback</h2><p>Existing buttons activate or deactivate panel roots. GameUIPanelFlow handles the panel child's fade, scale and initial focus; Back closes through the existing button event. Tab and Shift+Tab traverse currently usable controls. Escape activates the top panel's Back action. Pointer/focus feedback never delays the account request. Hidden panels release their CanvasGroup raycasts and reset their scale.</p><p>The Animasi control stores GameUI.ReducedMotion in PlayerPrefs. Minimum motion removes panel fades/scales and decorative drift. It does not change authentication or entitlement state. No audio cues or mute control are included.</p><p>GameUIAccessSummary subscribes to PlayerManager.StateChanged. It displays refreshing, unavailable, active or inactive access using real manager state. Profile/subscription Muat semula buttons call the existing coalesced RequestRefresh. Billing still uses the existing authenticated handoff; opening or closing a browser never grants access.</p></main><footer class="page-footer"><span>Editable source: Docs/tutorial/game-ui-customization.md</span><span>3 / 5</span></footer></section><section class="page"><header class="running-header"><span>Subscription System Unity</span><span>Customize the game menus</span></header><main class="content"><h2 id="run-and-verify">Run and verify</h2><p>Open LogMasuk and press Play. Try empty fields, malformed email, Back, rapid reopen, Tab, pointer press and Animasi. For real registration and billing, configure the backend using the existing setup guide <span class="reference">(<code>../SETUP.md</code>)</span>.</p><p>Outside Play mode, save scenes and run Tools &gt; Subscription System &gt; Validate Current Scene in both scenes. With the shipped empty backend URL, the expected setup message is Set an HTTPS backend base URL on SubscriptionSettings. Missing references or invalid events are additional failures to fix.</p><p>Run Run Offline Regression Checks, then Run Offline Scene Checks from the same Tools menu. These use local fixtures; scene checks temporarily snapshot and restore account and motion preferences. The 3 November 2026 maintainability run passed 27 data checks and 30 scene checks, including duplicate submission, account isolation, verification cleanup, focus inside an opened form, interrupted transition reset and reduced motion. The build outcome and remaining limits are recorded in VERIFICATION.md <span class="reference">(<code>../VERIFICATION.md#maintainability-refactor</code>)</span>.</p><p>For a Windows build, use the project's existing SubscriptionTemplateTools.BuildWindowsValidation editor helper or Build Settings with both original scenes enabled. The helper writes Build/SubscriptionValidation/SubscriptionSystem.exe. It does not publish a release.</p><p>Main menus and panel captures were reviewed at 1920x1080, 1280x720, 1024x768, 2560x1080 and 720x1280. Captures are under Docs/UIRevamp/after. These offscreen renders verify layout, not a real touch keyboard or device safe-area workflow. Real gamepad input, mobile keyboard/WebView, hosted email delivery and Stripe transactions remain untested. Screen-reader support is not implemented by the standard uGUI controls.</p><p>The color, label and feedback-duration examples were applied programmatically and restored in both scenes during the maintainability pass. Default entry/home renders were also inspected at the five sizes; 1920x1080 renders matched the baseline pixel-for-pixel. The full manual Inspector walkthrough remains a human review step.</p><p>If a form is invisible, check its root's active state, Panel CanvasGroup and disabled legacy Animator before changing references. If clicks fail, check the EventSystem, GraphicRaycaster and any newly added raycast-enabled decoration. Keep the account controllers and loaders assigned when editing hierarchy.</p></main><footer class="page-footer"><span>Editable source: Docs/tutorial/game-ui-customization.md</span><span>4 / 5</span></footer></section><section class="page"><header class="running-header"><span>Subscription System Unity</span><span>Customize the game menus</span></header><main class="content"><h2 id="export-this-tutorial">Export this tutorial</h2><p>From the repository root, run <code>python Docs/tutorial/export_game_ui_tutorial.py</code> for both screen HTML companions. This command uses only Python's standard library.</p><p>Run <code>python Docs/tutorial/export_tutorial_pdfs.py</code> for both PDF companions and their static print HTML. This command requires the Python Playwright package and an installed Edge or Chrome browser; use <code>--browser PATH</code> for another Chromium executable. It does not download a browser. If Playwright is missing, install it with <code>python -m pip install playwright</code>.</p><p>Markdown owns the content. The exporters own presentation; <code>tutorial-print.css</code> controls paper size, fonts and colors, and <code>paginate-tutorial.js</code> controls measured page breaks. Edit these sources, then rebuild. The PDFs include clickable contents and printed repository references so they remain readable outside this checkout. The older setup-guide screenshots and trailer depict the previous UI and remain historical references.</p></main><footer class="page-footer"><span>Editable source: Docs/tutorial/game-ui-customization.md</span><span>5 / 5</span></footer></section></body></html>

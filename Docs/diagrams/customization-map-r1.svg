@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" font-family="Segoe UI, sans-serif" font-size="24" fill="#203645" role="img" aria-labelledby="title desc">
+  <title id="title">Choose the source that owns the change</title>
+  <desc id="desc">An editing guide, not a runtime dependency diagram. Configure backend and game key in SubscriptionSettings.asset; tune colors and motion duration in DefaultGameUITheme.asset; edit layout and labels in scenes and MenuButtonFace.prefab; change validated application rules in account scripts and PHP source.</desc>
+  <rect width="1200" height="630" fill="#FFFFFF"/>
+  <text x="30" y="40" font-size="28">Choose the source that owns the change</text>
+  <rect x="30" y="275" width="255" height="95" fill="#205F75"/>
+  <text x="52" y="312" fill="#FFFFFF">What are you</text>
+  <text x="52" y="344" fill="#FFFFFF">changing?</text>
+  <g fill="none" stroke="#203645" stroke-width="2">
+    <path d="M285 322 H335 M335 135 V520 M335 135 H770 M335 255 H770 M335 385 H770 M335 520 H770"/>
+    <path d="M760 128 L770 135 L760 142 M760 248 L770 255 L760 262 M760 378 L770 385 L760 392 M760 513 L770 520 L760 527"/>
+    <rect x="780" y="90" width="390" height="85"/>
+    <rect x="780" y="210" width="390" height="85"/>
+    <rect x="780" y="340" width="390" height="95"/>
+    <rect x="780" y="475" width="390" height="85"/>
+  </g>
+  <text x="390" y="98">Configure backend</text>
+  <text x="390" y="126">and game key</text>
+  <text x="800" y="140">SubscriptionSettings.asset</text>
+  <text x="390" y="218">Tune colors and</text>
+  <text x="390" y="246">motion duration</text>
+  <text x="800" y="260">DefaultGameUITheme.asset</text>
+  <text x="390" y="376">Edit layout and labels</text>
+  <text x="800" y="378">Scenes and</text>
+  <text x="800" y="409">MenuButtonFace.prefab</text>
+  <text x="390" y="483">Change validated</text>
+  <text x="390" y="511">application rules</text>
+  <text x="800" y="510">Account scripts and</text>
+  <text x="800" y="541">PHP source</text>
+</svg>

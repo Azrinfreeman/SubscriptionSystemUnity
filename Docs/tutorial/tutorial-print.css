@@ -1,0 +1,27 @@
+/* Shared print design. Edit Markdown for content; edit this file for appearance. */
+:root{--ink:#203645;--primary:#205f75;--field:#eaf3f6;--rule:#cad9df}
+*{box-sizing:border-box}
+@page{size:Letter;margin:0}
+body{margin:0;background:#eef1f3;color:var(--ink);font:11pt/1.45 'Segoe UI',sans-serif}
+.page{width:8.5in;height:11in;padding:.5in .8in .4in;background:white;display:grid;grid-template-rows:auto 1fr auto;overflow:hidden;break-after:page;margin:20px auto}
+.page:last-child{break-after:auto}
+.running-header{display:flex;justify-content:space-between;gap:20px;border-bottom:1px solid var(--rule);padding-bottom:12px;margin-bottom:22px;font-size:9pt;color:var(--primary)}
+.content{min-height:0;overflow:hidden;padding-bottom:.3in;overflow-wrap:anywhere}
+.page-footer{border-top:1px solid var(--rule);padding-top:10px;display:flex;justify-content:space-between;gap:12px;font-size:8pt;color:var(--ink)}
+h1,h2,h3{font-family:Georgia,serif;font-weight:normal;line-height:1.2;color:var(--primary)}
+h1{font-size:30pt;margin:0 0 18px;max-width:24ch}
+h2{font-size:19pt;margin:24px 0 12px}
+h3{font-size:14pt;margin:18px 0 9px}
+.content>:first-child{margin-top:0}
+p{margin:0 0 13px}ul,ol{padding-left:22px;margin:0 0 13px}li{padding-left:3px;margin-bottom:9px}
+a{color:var(--primary);text-underline-offset:3px}a:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+code{font:9pt/1.45 Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--field);padding:13px 15px;margin:0 0 15px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.45}
+pre code{white-space:pre-wrap}
+table{width:100%;border-collapse:collapse;font-size:10pt;line-height:1.4;margin:0 0 15px;table-layout:fixed}
+th,td{text-align:left;vertical-align:top;padding:9px 8px;border-bottom:1px solid var(--rule);overflow-wrap:anywhere}
+th{font-weight:600;color:var(--primary);border-top:1px solid var(--rule)}
+th:first-child,td:first-child{padding-left:0;width:40%}
+.reference{font-size:9pt;color:var(--ink)}
+figure{margin:14px 0 18px}figure img{display:block;width:100%;height:auto}figcaption{margin-top:10px;font-size:9pt;line-height:1.4}
+@media print{body{background:white;-webkit-print-color-adjust:exact;print-color-adjust:exact}.page{margin:0}}

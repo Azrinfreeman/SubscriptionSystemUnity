@@ -1,24 +1,32 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+[RequireComponent(typeof(Button))]
 public class checkEmailValidation : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    [Tooltip("Require current subscription/customer details for change/manage actions.")]
+    [SerializeField]
+    bool requireSubscription;
+    Button button;
+    void OnEnable()
     {
-        
+        button = GetComponent<Button>();
+        PlayerManager.StateChanged += Render;
+        Render();
     }
 
-    // Update is called once per frame
-    void Update()
+    void Render()
     {
-        //check sama ada user sudah verify account email mereka, jika sudah, user boleh buat langganan plan 
-        if(PlayerPrefs.GetString("confirmation").Equals("1")){
-            transform.GetComponent<Button>().interactable = true;
-        }else{
-            transform.GetComponent<Button>().interactable = false;
-        }
+        var manager = PlayerManager.instance;
+        bool accountReady = manager != null && manager.IsVerified && !manager.IsLoggingOut;
+        bool subscriptionReady = manager != null && manager.SubscriptionFresh
+            && !string.IsNullOrEmpty(manager.stripe_id)
+            && !string.IsNullOrEmpty(PlayerPrefs.GetString("price_id"));
+        button.interactable = accountReady && (!requireSubscription || subscriptionReady);
+    }
+
+    void OnDisable()
+    {
+        PlayerManager.StateChanged -= Render;
     }
 }

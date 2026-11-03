@@ -1,0 +1,44 @@
+1
+00:00:00,000 --> 00:00:04,000
+Your Game. Connected.
+Unity Subscription System Template
+
+2
+00:00:04,000 --> 00:00:09,000
+Accounts, built into your game.
+Registration. Login. Email verification.
+
+3
+00:00:09,000 --> 00:00:14,000
+One place for your players.
+Your original dashboard. A reusable foundation.
+
+4
+00:00:14,000 --> 00:00:20,000
+Subscriptions, with Stripe.
+Choose a plan. Verify payment. Refresh access.
+
+5
+00:00:20,000 --> 00:00:25,000
+Keep players in control.
+Plan details. Access status. Subscription management.
+
+6
+00:00:25,000 --> 00:00:31,000
+Configure it for your project.
+One shared settings asset. Your server. Your game.
+
+7
+00:00:31,000 --> 00:00:37,000
+Unity client. PHP backend.
+Accounts, verification and subscription reconciliation.
+
+8
+00:00:37,000 --> 00:00:41,000
+Setup, step by step.
+An illustrated 20-page guide is included.
+
+9
+00:00:41,000 --> 00:00:45,000
+Make it yours.
+Existing scenes. Configurable services. Visual setup guide.

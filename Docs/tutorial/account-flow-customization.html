@@ -1,0 +1,89 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Customize the account flow</title><style>
+:root{color-scheme:light;--ink:#203645;--primary:#205f75;--field:#eaf3f6;--rule:#cad9df}
+*{box-sizing:border-box}body{max-width:72ch;margin:48px auto;padding:0 24px;color:var(--ink);background:#fff;font:17px/1.5 'Segoe UI',system-ui,sans-serif;overflow-wrap:anywhere}
+h1{font-size:2.1rem;line-height:1.15;margin:0 0 1em}h2{font-size:1.45rem;line-height:1.25;margin:2em 0 .7em}h3{font-size:1.12rem;margin:1.6em 0 .5em}
+p{margin:0 0 1em}a{color:var(--primary);text-underline-offset:3px}a:focus-visible{outline:3px solid var(--primary);outline-offset:3px}
+code{font-family:Consolas,'Courier New',monospace;font-size:.88em;overflow-wrap:anywhere}pre{padding:16px;background:var(--field);overflow-x:auto;line-height:1.5}pre code{white-space:pre-wrap;overflow-wrap:anywhere}
+table{border-collapse:collapse;width:100%;font-size:.88em;margin:1.2em 0}th,td{padding:10px 8px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top;overflow-wrap:anywhere}th{font-weight:600}li{margin:0 0 .6em}ul,ol{padding-left:1.5em}footer{margin-top:3em;padding-top:1em;border-top:1px solid var(--rule);font-size:.85em}
+figure{margin:1.5em 0}figure img{display:block;width:100%;height:auto}figcaption{font-size:.85em;margin-top:.8em}
+@media(max-width:480px){body{margin:24px auto;padding:0 16px;font-size:16px}h1{font-size:1.8rem}th,td{padding:8px 5px}table{table-layout:fixed}}
+@media print{body{margin:0;max-width:none;font-size:11pt}h2,h3{break-after:avoid}tr,pre{break-inside:avoid}a{color:var(--ink)}}
+</style></head><body><main><h1 id="customize-the-account-flow">Customize the account flow</h1>
+<p>Keep configuration in assets, state changes in <code>PlayerManager</code>, requests in <code>Player</code>, and display work in the existing controllers/loaders. Start with <a href="../SETUP.md">setup</a> if the template is not configured. These examples assume Unity 2022.3.62f3 and the included PHP backend.</p>
+<h2 id="contents">Contents</h2>
+<ul>
+<li><a href="#trace-a-request-before-editing-it">Trace a request before editing it</a></li>
+<li><a href="#find-the-owner-of-a-change">Find the owner of a change</a></li>
+<li><a href="#add-a-display-only-account-row">Add a display-only account row</a></li>
+<li><a href="#adapt-the-phone-policy-on-both-sides">Adapt the phone policy on both sides</a></li>
+<li><a href="#preserve-the-integration-boundaries">Preserve the integration boundaries</a></li>
+<li><a href="#verify-and-export">Verify and export</a></li>
+</ul>
+<h2 id="trace-a-request-before-editing-it">Trace a request before editing it</h2>
+<p><code>LoginController.LogMasuk()</code> validates input and starts its login coroutine. The controller constructs the original form fields, then calls <code>manager.Requests.Post</code>. In normal play this is the <code>Player</code> component, which joins the configured endpoint, sends the request and returns a <code>Player.Result</code>.</p>
+<p>The controller checks the captured session generation before accepting a response. <code>PlayerManager.AcceptLogin</code> owns session credentials and account caches. <code>RefreshNow</code> fetches the current profile and subscription, then raises <code>StateChanged</code>. <code>loadDetails</code>, <code>loadSubscriptionDetails</code>, <code>loadNama</code> and <code>GameUIAccessSummary</code> subscribe while enabled and render that state. They do not independently grant access.</p>
+<p>For billing, <code>LoadPaymentSite</code> asks <code>createBillingLink.php</code> for an authenticated ticket. The returned URL must match the configured HTTPS host and allowed page and must not be expired. Opening the browser sets up a refresh on return; it does not set premium status. See <a href="../BACKEND_CONTRACT.md">the backend contract</a> for the wire rules.</p>
+<p>The editing map routes common changes to their existing sources. It describes where to edit, not runtime dependencies. The <a href="../diagrams/customization-map-r1.svg">editable SVG</a> preserves the four destinations in the <a href="../diagrams/customization-map.mmd">original Mermaid source</a> and arranges them vertically for readable print labels.</p>
+<figure><img src="../diagrams/customization-map-r1.svg" alt="Figure 1. Choose the source that owns the change. Source: the existing customization-map brief and repository paths listed below."><figcaption>Figure 1. Choose the source that owns the change. Source: the existing customization-map brief and repository paths listed below.</figcaption></figure>
+<h2 id="find-the-owner-of-a-change">Find the owner of a change</h2>
+<table><thead><tr><th scope="col">Existing file</th><th scope="col">Responsibility and safe editing point</th></tr></thead><tbody>
+<tr><td><code>Assets/SubscriptionSettings.cs</code> and <code>Assets/Settings/SubscriptionSettings.asset</code></td><td>URL, game key, endpoints, timing and configuration validation. Use the Inspector for installation values.</td></tr>
+<tr><td><code>Assets/Player.cs</code></td><td>HTTP, credential attachment, response parsing and callback delivery. <code>IPlayerRequests</code> is the existing offline test seam.</td></tr>
+<tr><td><code>Assets/PlayerManager.cs</code></td><td>Session generation, refresh state, explicit cache mappings, access decision and logout.</td></tr>
+<tr><td><code>Assets/LoginController.cs</code>, <code>Assets/RegisterUserController.cs</code></td><td>Form validity, one submission at a time, response messages and retry.</td></tr>
+<tr><td><code>Assets/loadDetails.cs</code></td><td>Profile rows and verification request ownership; <code>VerificationCooldownSeconds</code> controls the client resend delay.</td></tr>
+<tr><td><code>Assets/CheckEmailVerify.cs</code>, <code>Assets/checkEmailValidation.cs</code></td><td>Whether verification or billing controls are currently usable. These are presentation guards; server authorization remains required.</td></tr>
+<tr><td><code>Assets/loadSubscriptionDetails.cs</code></td><td>Plan/date/status rows; <code>StatusMessage</code> prioritizes failures over stale display state.</td></tr>
+<tr><td><code>Backend/SubscriptionServer/src/Accounts.php</code></td><td>Registration policy, login, session conflict handling and verification/mail operations.</td></tr>
+<tr><td><code>Backend/SubscriptionServer/src/Core.php</code>, <code>Billing.php</code></td><td>Server authentication/database boundaries and provider synchronization/checkout.</td></tr>
+</tbody></table>
+<p>The existing lower-case component names are retained because scenes and external code may reference them. Improve a local/private name when useful; do not rename public actions or serialized fields without a compatibility migration.</p>
+<h2 id="add-a-display-only-account-row">Add a display-only account row</h2>
+<p>This example displays the current account ID; it adds no API field and does not make the profile editable. Work in a copy or branch, with Play mode stopped and scene edits saved.</p>
+<ol>
+<li>Open <code>Assets/Scenes/LamanUtama.unity</code>. Find the profile panel&#x27;s <code>loadDetails</code> component. Duplicate an existing read-only detail row in that panel and adjust its RectTransform to avoid overlap. Change its visible caption to <code>ID akaun</code>.</li>
+<li>In <code>Assets/loadDetails.cs</code>, beside the other serialized input fields, add:</li>
+</ol>
+<pre><code class="language-csharp">[SerializeField]
+TMP_InputField accountIdField;</code></pre>
+<ol start="3">
+<li>In <code>LoadDetailsUser()</code>, immediately after the existing name/email/phone <code>Set</code> calls, add:</li>
+</ol>
+<pre><code class="language-csharp">Set(accountIdField, manager != null &amp;&amp; manager.IsLoggedIn
+    ? manager.id_user.ToString()
+    : &quot;&quot;);</code></pre>
+<ol start="4">
+<li>Wait for compilation, then assign the duplicated row&#x27;s TMP_InputField to Account Id Field on <code>loadDetails</code>. Keep it read-only; the existing <code>Set</code> helper also applies that property. Save the scene and run scene validation.</li>
+<li>Use an authorized development account to inspect the row. Trigger refresh, close/reopen the profile, log out and sign in as another account. The row should show only the current signed-in account ID and clear when there is no session.</li>
+</ol>
+<p>Do not use this ID to authenticate a request. The server validates the bearer session and rejects mismatched identity fields. A modified client can change its own UI. If you later display a new server property, update the wire contract, parsing, state mapping and tests together.</p>
+<h2 id="adapt-the-phone-policy-on-both-sides">Adapt the phone policy on both sides</h2>
+<p>The shipped policy accepts Malaysian mobile numbers through <code>RegisterUserController.MatchPhoneNumberPattern</code> and <code>registerAccount()</code> in server <code>src/Accounts.php</code>. Changing only Unity causes valid-looking forms to fail on the server.</p>
+<p>For a concrete alternative, require a plus sign, a nonzero first digit and 7–15 digits total. This is a simple international-format policy, not a country-specific phone-number verifier. It requires no new package.</p>
+<p>In <code>Assets/RegisterUserController.cs</code>, change the pattern to:</p>
+<pre><code class="language-csharp">public const string MatchPhoneNumberPattern = @&quot;^\+[1-9][0-9]{6,14}$&quot;;</code></pre>
+<p>In <code>Backend/SubscriptionServer/src/Accounts.php</code>, change the <code>$validPhone</code> expression inside <code>registerAccount()</code> to:</p>
+<pre><code class="language-php">$validPhone = preg_match(&#x27;/^\+[1-9][0-9]{6,14}$/&#x27;, $phone);</code></pre>
+<p>Update the server&#x27;s registration error text, SignUp&#x27;s phone label/placeholder, and any tooltip to describe the same format. Keep the existing 30-byte server input cap. Before adopting this in an existing deployment, decide how to normalize stored phone numbers and retain uniqueness; this example does not migrate existing accounts.</p>
+<table><thead><tr><th scope="col">Input</th><th scope="col">Proposed rule</th></tr></thead><tbody>
+<tr><td><code>+60123456789</code></td><td>Accept</td></tr>
+<tr><td><code>+1234567</code></td><td>Accept</td></tr>
+<tr><td><code>0123456789</code></td><td>Reject: plus sign missing</td></tr>
+<tr><td><code>+01234567</code></td><td>Reject: first digit is zero</td></tr>
+<tr><td><code>+123456</code></td><td>Reject: fewer than seven digits</td></tr>
+<tr><td><code>+1234567890123456</code></td><td>Reject: more than fifteen digits</td></tr>
+</tbody></table>
+<p>Update existing offline fixtures that use Malaysian numbers intentionally, then test accepted input, rejected input and duplicate phone registration against the same revised policy. The repository retains its Malaysian policy; this example is a customization recipe, not a shipped policy change.</p>
+<h2 id="preserve-the-integration-boundaries">Preserve the integration boundaries</h2>
+<p>Keep session generation checks after asynchronous replies. <code>SessionVersion</code> changes when the account is cleared or its pending refresh is canceled. A late response or protected 401 from an old account must not affect the next account.</p>
+<p>Keep <code>try/finally</code> cleanup around pending requests and release only the verification owner captured by that request. A closed panel must not leave a submit button locked or clear a newer request&#x27;s state. Pair <code>StateChanged</code> subscriptions with unsubscriptions.</p>
+<p>For PHP changes, preserve prepared SQL parameters, transaction scope, account lock order, single-use tokens and durable checkout idempotency. The account lock in <code>synchronize()</code> spans retrieval and application of provider state so a stale concurrent response cannot win. The checkout intent commits before a provider side effect so an interrupted call can reuse its key.</p>
+<p><code>PlayerPrefs</code> keeps legacy display keys. <code>ApplySubscription</code> now names each wire-field/cache-key mapping explicitly. Add a cache field only when needed, with its cleanup path and round-trip regression check. Do not persist bearer tokens or treat local caches as proof of payment.</p>
+<h2 id="verify-and-export">Verify and export</h2>
+<p>Run the scene validators and both offline suites using <a href="../SETUP.md#confirm-the-template-works-offline">setup&#x27;s offline steps</a>. The data suite includes cache identifier mapping, display-field mapping and null-value replacement. Use the <a href="../../Backend/SubscriptionServer/README.md#verification-and-release">server test procedure</a> after PHP policy or transaction changes. It requires a disposable localhost database and sends no live payment requests.</p>
+<p>Validation evidence for this refactor is recorded in <a href="../VERIFICATION.md#maintainability-refactor">VERIFICATION.md</a>. Scripted customization checks and manual Editor steps are identified separately there. Hosted email, Stripe transactions, physical-device input and the complete human walkthrough remain owner checks.</p>
+<p>Regenerate both screen HTML companions from the root:</p>
+<pre><code class="language-text">python Docs/tutorial/export_game_ui_tutorial.py</code></pre>
+<p>The screen exporter uses Python&#x27;s standard library. To rebuild both PDFs and static print HTML, run:</p>
+<pre><code class="language-text">python Docs/tutorial/export_tutorial_pdfs.py</code></pre>
+<p>PDF export requires Python Playwright and installed Edge/Chrome. See <a href="game-ui-customization.html#export-this-tutorial">the menu tutorial&#x27;s export steps</a> for prerequisites and the editable print styles. Edit Markdown for content; HTML and PDF are generated outputs. Check code blocks, links, tables and page breaks after a change. The exporters reject unsupported Markdown or page overflow rather than silently dropping content.</p></main><footer><a href="account-flow-customization.md">Editable Markdown source</a></footer></body></html>

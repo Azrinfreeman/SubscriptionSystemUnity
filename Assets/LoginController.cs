@@ -1,320 +1,230 @@
 using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Text.RegularExpressions;
-using System.Xml;
 using TMPro;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class LoginController : MonoBehaviour
 {
     [SerializeField]
-    private TMP_InputField emailText;
-    private Transform emailWarningTransform;
-
+    TMP_InputField emailText;
     [SerializeField]
-    private TMP_InputField passText;
-
-    //ignore text variable, for testing
-
-
+    TMP_InputField passText;
     [SerializeField]
-    private Button btnLog;
-
+    Transform emailWarningTransform;
     [SerializeField]
-    private Transform Notification;
-
+    TMP_Text emailWarningText;
     [SerializeField]
-    private Transform Notice;
-
+    Button btnLog;
     [SerializeField]
-    private Transform LogoutPanel;
+    Transform Notification;
+    [SerializeField]
+    Transform Notice;
+    [SerializeField]
+    Transform LogoutPanel;
+    [SerializeField]
+    Animator notificationAnimator;
+    [SerializeField]
+    TMP_Text notificationText;
+    [SerializeField]
+    TMP_Text noticeText;
+    [SerializeField]
+    TMP_Text deviceText;
+    [SerializeField]
+    GameObject noticeLoading;
+    [SerializeField]
+    GameObject noticeError;
+    [SerializeField]
+    GameObject noticeSuccess;
     bool isPressed;
-
-    /// Checks whether the given Email-Parameter is a valid E-Mail address.
-    public const string MatchEmailPattern =
-        @"^(([\w-]+\.)+[\w-]+|([a-zA-Z]{1}|[\w-]{2,}))@"
-        + @"((([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\.([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\."
-        + @"([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\.([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])){1}|"
-        + @"([a-zA-Z]+[\w-]+\.)+[a-zA-Z]{2,4})$";
-
-    public static Player.PlayerInfo CreateFromJSON(string jsonString)
+    int attemptVersion;
+    public const string MatchEmailPattern = @"^[^\s@]+@[^\s@]+\.[^\s@]+$";
+    public static bool IsEmail(string email) => !string.IsNullOrWhiteSpace(email) && email.Length <= 254 && Regex.IsMatch(email.Trim(), MatchEmailPattern);
+    public static Player.PlayerInfo CreateFromJSON(string json) => Player.TryProfile(json, out var value) ? value : null;
+    public static Player.PlayerSubscription CreateFromJSON2(string json) => Player.TrySubscription(json, out var value) ? value : null;
+    void OnEnable()
     {
-        return JsonUtility.FromJson<Player.PlayerInfo>(jsonString);
+        if (emailText != null)
+            emailText.onValueChanged.AddListener(OnInput);
+        if (passText != null)
+            passText.onValueChanged.AddListener(OnInput);
+        PlayerManager.StateChanged += Render;
+        Render();
     }
 
-    public static Player.PlayerSubscription CreateFromJSON2(string jsonString)
+    void Start()
     {
-        return JsonUtility.FromJson<Player.PlayerSubscription>(jsonString);
+        if (emailWarningTransform != null)
+            emailWarningTransform.gameObject.SetActive(false);
+        if (PlayerManager.instance != null && !string.IsNullOrEmpty(PlayerManager.instance.LastError))
+            ShowMessage(PlayerManager.instance.LastError);
+        Render();
     }
 
-    public static bool IsEmail(string email)
+    void OnInput(string value)
     {
-        if (email != null)
-            return Regex.IsMatch(email, MatchEmailPattern);
-        else
-            return false;
+        CheckEmailValidation();
     }
 
     public void CheckEmailValidation()
     {
-        if (IsEmail(emailText.text))
-        {
-            emailWarningTransform.gameObject.SetActive(false);
-            emailWarningTransform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "";
-        }
-        else
-        {
-            emailWarningTransform.gameObject.SetActive(true);
-            emailWarningTransform.GetChild(0).GetComponent<TextMeshProUGUI>().text =
-                "Invalid Email";
-        }
+        bool invalid = emailText != null && !string.IsNullOrWhiteSpace(emailText.text) && !IsEmail(emailText.text);
+        if (emailWarningTransform != null)
+            emailWarningTransform.gameObject.SetActive(invalid);
+        if (emailWarningText != null)
+            emailWarningText.text = invalid ? "Invalid Email" : "";
+        Render();
     }
 
-    // Start is called before the first frame update
-    void Start()
+    void Render()
     {
-        btnLog = GameObject.Find("LogBtn").transform.GetChild(0).GetComponent<Button>();
-        emailWarningTransform = GameObject.Find("EmailWarning").GetComponent<Transform>();
-        emailText = GameObject.Find("Email").GetComponent<TMP_InputField>();
-        passText = GameObject.Find("Password").GetComponent<TMP_InputField>();
-        Notification = GameObject.Find("Notification").GetComponent<Transform>();
-
-        emailWarningTransform.gameObject.SetActive(false);
+        if (btnLog != null)
+            btnLog.interactable = CanSubmit();
     }
 
-    // Update is called once per frame
-    void Update()
+    bool CanSubmit()
     {
-        if (!emailWarningTransform.gameObject.activeSelf)
-        {
-            if (
-                !string.IsNullOrEmpty(emailText.text)
-                && !string.IsNullOrEmpty(passText.text)
-                && !isPressed
-            )
-            {
-                //Debug.Log("email work");
-                btnLog.interactable = true;
-            }
-        }
-        else
-        {
-            btnLog.interactable = false;
-        }
+        var manager = PlayerManager.instance;
+        bool sessionReady = manager != null && !manager.IsLoggingOut && !manager.IsAuthenticating;
+        bool fieldsReady = emailText != null && passText != null
+            && IsEmail(emailText.text) && !string.IsNullOrEmpty(passText.text);
+        return !isPressed && sessionReady && fieldsReady;
     }
 
     public void LogMasuk()
     {
+        if (isPressed || PlayerManager.instance == null || PlayerManager.instance.IsLoggingOut)
+            return;
+        if (emailText == null || passText == null || !IsEmail(emailText.text) || string.IsNullOrEmpty(passText.text))
+        {
+            ShowMessage("Sila isi email dan kata laluan yang sah.");
+            return;
+        }
+
         isPressed = true;
+        Render();
         StartCoroutine(Login());
     }
 
     IEnumerator Login()
     {
-        //btnLog.interactable = false;
-        Notice.gameObject.SetActive(true);
-        Notice.transform.GetChild(0).transform.GetChild(0).gameObject.SetActive(true);
-        WWWForm form = new WWWForm();
-        form.AddField("_email", emailText.text);
-        form.AddField("_password", passText.text);
-        form.AddField("_device_name", SystemInfo.deviceName + " " + SystemInfo.deviceModel);
-        form.AddField("_game_name", "Modul 2"); // Modul 1 atau Modul 2
-        //check detail yang dimasukkan oleh user, email atau password itu valid ke tak
-        using (
-            UnityWebRequest www = UnityWebRequest.Post(
-                Domains.instance.Domain + "loginVerify.php",
-                form
-            )
-        )
+        var manager = PlayerManager.instance;
+        manager.BeginLogin();
+        attemptVersion = manager.SessionVersion;
+        ShowNotice("LOADING..", true);
+        try
         {
-            yield return www.SendWebRequest();
-            if (
-                www.result == UnityWebRequest.Result.ConnectionError
-                || www.result == UnityWebRequest.Result.ProtocolError
-            )
+            var form = new WWWForm();
+            form.AddField("_email", emailText.text.Trim());
+            form.AddField("_password", passText.text);
+            form.AddField("_device_name", SystemInfo.deviceName + " " + SystemInfo.deviceModel);
+            form.AddField("_game_name", Player.Settings != null ? Player.Settings.gameIdentifier : "");
+            Player.Result result = null;
+            yield return manager.Requests.Post(Player.Settings != null ? Player.Settings.loginEndpoint : "", form, value => result = value);
+            if (manager.SessionVersion != attemptVersion)
+                yield break;
+            if (result == null || !result.success)
             {
-                Debug.Log(www.error);
-                btnLog.interactable = true;
-                Notice.gameObject.SetActive(false);
-                isPressed = false;
+                ShowNotice(result?.error ?? "Tiada respons server.", false);
                 yield break;
             }
-            else
+
+            if (!Player.TryProfile(result.body, out var profile))
             {
-                //show result as text .text
-                //.Log(www.downloadHandler.text);
-                //if it's an id
-                if (www.downloadHandler.text == "error")
+                string message = result.body == "invalid email" ? "Email tidak berdaftar." : result.body == "password is not verify" ? "Kata laluan tidak sah." : "Respons log masuk tidak sah. Sila cuba lagi.";
+                ShowNotice(message, false);
+                ShowMessage(message);
+                yield break;
+            }
+
+            if (!string.Equals(profile.email, emailText.text.Trim(), System.StringComparison.OrdinalIgnoreCase))
+            {
+                ShowNotice("Respons akaun tidak sepadan.", false);
+                yield break;
+            }
+
+            if (Player.Settings.enforceServerLoginStatus && profile.login_logs != 0)
+            {
+                manager.PendingLogoutUserId = profile.id_user;
+                manager.PendingLogoutActionToken = profile.session_action_token;
+                if (string.IsNullOrEmpty(profile.session_action_token))
                 {
-                    btnLog.interactable = true;
-                    Debug.Log(www.downloadHandler.text);
-                    Notice.gameObject.SetActive(false);
-                    isPressed = false;
+                    ShowNotice("Server session response is incomplete. Update the PHP backend.", false);
                     yield break;
                 }
-                else
-                {
-                    if (www.downloadHandler.text.Equals("password is not verify"))
-                    {
-                        btnLog.interactable = true;
-                        Debug.Log(www.downloadHandler.text);
-                        Notice.gameObject.SetActive(false);
-                        Notification.GetComponent<Animator>().Play("ShowNotificationStart");
-                        Notification
-                            .GetChild(0)
-                            .transform
-                            .GetChild(0)
-                            .transform
-                            .GetChild(1)
-                            .GetComponent<TextMeshProUGUI>()
-                            .text = "password is not verify..";
-                        isPressed = false;
-                        yield break;
-                    }
-                    else if (www.downloadHandler.text.Equals("invalid email"))
-                    {
-                        btnLog.interactable = true;
-                        Debug.Log(www.downloadHandler.text);
-                        Notice.gameObject.SetActive(false);
-                        Notification.GetComponent<Animator>().Play("ShowNotificationStart");
-                        Notification
-                            .GetChild(0)
-                            .transform
-                            .GetChild(0)
-                            .transform
-                            .GetChild(1)
-                            .GetComponent<TextMeshProUGUI>()
-                            .text = "invalid email..";
-                        isPressed = false;
-                        yield break;
-                    }
-                    else
-                    {
-                        Debug.Log(www.downloadHandler.text);
-                        Player.PlayerInfo player1 = JsonUtility.FromJson<Player.PlayerInfo>(
-                            www.downloadHandler.text
-                        );
 
-                        // player.SavePlayerInfo(player1);
-                        // player.LoadPlayerInfo(player1);
-                        PlayerPrefs.SetInt("id_user", player1.id_user);
-                        PlayerPrefs.SetString("name", player1.name);
-                        PlayerPrefs.SetString("email", player1.email);
-                        PlayerPrefs.SetString("notel", player1.notel);
-                        PlayerPrefs.SetString("confirmation", player1.confirmation);
-
-                        PlayerPrefs.SetInt("login_logs", player1.login_logs);
-                        PlayerManager.instance.AssignInformation();
-                        btnLog.interactable = false;
-                        if (player1.login_logs != 0)
-                        {
-                            Notification.GetComponent<Animator>().Play("ShowNotificationStart");
-                            Notification
-                                .GetChild(0)
-                                .transform
-                                .GetChild(0)
-                                .transform
-                                .GetChild(1)
-                                .GetComponent<TextMeshProUGUI>()
-                                .text = "Anda sudah log masuk dari peranti yang lain...";
-
-                            btnLog.interactable = true;
-                            Notice.gameObject.SetActive(false);
-                            isPressed = false;
-                            LogoutPanel.gameObject.SetActive(true);
-                            LogoutPanel
-                                .GetChild(1)
-                                .transform
-                                .GetChild(0)
-                                .transform
-                                .GetChild(1)
-                                .GetComponent<TextMeshProUGUI>()
-                                .text = player1.device_name + " \n(name peranti)";
-                            yield break;
-                        }
-                        else
-                        {
-                            PlayerPrefs.SetInt("isLogin", 1);
-                        }
-
-                        //keluarkan notifikasi dari atas yang user berjaya log masuk
-                        Notification.GetComponent<Animator>().Play("ShowNotificationStart");
-                    }
-                }
+                if (LogoutPanel != null)
+                    LogoutPanel.gameObject.SetActive(true);
+                if (deviceText != null)
+                    deviceText.text = profile.device_name ?? "Peranti lain";
+                if (Notice != null)
+                    Notice.gameObject.SetActive(false);
+                ShowMessage("Anda sudah log masuk dari peranti yang lain. Log keluar dahulu.");
+                yield break;
             }
-        }
-        //fetch info tentang detail user yang dimasukkan berdasarkan email yang diletak
-        using (
-            UnityWebRequest www = UnityWebRequest.Post(
-                Domains.instance.Domain + "getinfo.php",
-                form
-            )
-        )
-        {
-            yield return www.SendWebRequest();
-            if (
-                www.result == UnityWebRequest.Result.ConnectionError
-                || www.result == UnityWebRequest.Result.ProtocolError
-            )
+
+            manager.AcceptLogin(profile);
+            attemptVersion = manager.SessionVersion;
+            yield return manager.RefreshNow();
+            if (manager.SessionVersion != attemptVersion || !manager.IsLoggedIn)
             {
-                Debug.Log(www.error);
-
-                //text.text = www.error;
-                PlayerPrefs.SetString("status", "Trial");
+                ShowNotice(manager.LastError ?? "Sila log masuk semula.", false);
+                yield break;
             }
+
+            passText.SetTextWithoutNotify("");
+            if (Notice != null)
+                Notice.gameObject.SetActive(false);
+            if (Application.CanStreamedLevelBeLoaded(manager.loadScene))
+                SceneManager.LoadScene(manager.loadScene);
             else
-            {
-                if (www.downloadHandler.text == "no result")
-                {
-                    Debug.Log(www.downloadHandler.text);
-                    PlayerPrefs.SetString("status", "Trial");
-                }
-                else
-                {
-                    btnLog.interactable = false;
-
-                    if (www.downloadHandler.text.Equals(""))
-                    {
-                        //text.text = www.downloadHandler.text;
-                        btnLog.interactable = true;
-                        PlayerPrefs.SetString("status", "Trial");
-                    }
-                    else
-                    {
-                        Debug.Log(www.downloadHandler.text);
-
-                        Player.PlayerSubscription PS =
-                            JsonUtility.FromJson<Player.PlayerSubscription>(
-                                www.downloadHandler.text
-                            );
-                        //User Subscription Info
-                        PlayerPrefs.SetString("stripe_id", PS.stripe_id);
-                        PlayerPrefs.SetString("stripe_sub_id", PS.stripe_sub_id);
-                        PlayerPrefs.SetString("pmc_id", PS.stripe_pmc_id);
-                        PlayerPrefs.SetString("product_id", PS.stripe_product_id);
-                        PlayerPrefs.SetString("price_id", PS.stripe_price_id);
-                        PlayerPrefs.SetString("start_date", PS.start_date);
-                        PlayerPrefs.SetString("end_date", PS.end_date);
-                        PlayerPrefs.SetString("plan", PS.plan);
-                        PlayerPrefs.SetString("plan_desc", PS.plan_desc);
-                        PlayerPrefs.SetString("status", PS.status);
-                        PlayerPrefs.SetString("stripe_phone", PS.stripe_phone);
-                        PlayerManager.instance.AssignInformation();
-                        btnLog.interactable = false;
-                    }
-                }
-            }
-            isPressed = false;
-            Notification.GetComponent<Animator>().Play("ShowNotificationStart"); //keluarkan notifikasi dari atas screen
-            yield return new WaitForSeconds(2f);
-            Notice.gameObject.SetActive(false);
-            SceneManager.LoadScene("LamanUtama"); //load scene selepas log masuk
+                ShowNotice("Laman utama tiada dalam Build Settings.", false);
         }
+        finally
+        {
+            isPressed = false;
+            if (manager != null && manager.SessionVersion == attemptVersion)
+                manager.EndLogin();
+            Render();
+        }
+    }
+
+    void ShowNotice(string message, bool loading)
+    {
+        if (Notice != null)
+            Notice.gameObject.SetActive(true);
+        if (noticeLoading != null)
+            noticeLoading.SetActive(loading);
+        if (noticeError != null)
+            noticeError.SetActive(!loading);
+        if (noticeSuccess != null)
+            noticeSuccess.SetActive(false);
+        if (noticeText != null)
+            noticeText.text = message;
+    // Keep actionable errors visible until retry or leaving the form.
+    }
+
+    void ShowMessage(string message)
+    {
+        if (notificationText != null)
+            notificationText.text = message;
+        if (notificationAnimator != null)
+            notificationAnimator.Play("ShowNotificationStart");
+    }
+
+    void OnDisable()
+    {
+        PlayerManager.StateChanged -= Render;
+        if (emailText != null)
+            emailText.onValueChanged.RemoveListener(OnInput);
+        if (passText != null)
+            passText.onValueChanged.RemoveListener(OnInput);
+        StopAllCoroutines();
+        if (isPressed && PlayerManager.instance != null && PlayerManager.instance.SessionVersion == attemptVersion)
+            PlayerManager.instance.EndLogin();
+        isPressed = false;
+        if (Notice != null)
+            Notice.gameObject.SetActive(false);
     }
 }

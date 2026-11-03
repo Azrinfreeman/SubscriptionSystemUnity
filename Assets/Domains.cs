@@ -1,31 +1,28 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+[DefaultExecutionOrder(-1000)]
 public class Domains : MonoBehaviour
 {
     public static Domains instance;
+    public SubscriptionSettings settings;
+    // Compatibility for scripts reading the old property. Configuration lives in settings.
+    public string Domain => settings != null ? settings.backendBaseUrl.TrimEnd('/') + "/" : "";
 
     void Awake()
     {
-        //tukar domain di sini jika perlu in the future 
-        Domain = "https://hananaelearning.com/math-modul/";
-        DontDestroyOnLoad(this);
-        if (!instance)
-        {
-            instance = this;
-        }
-        else
+        if (instance != null && instance != this)
         {
             Destroy(gameObject);
+            return;
         }
+
+        instance = this;
+        DontDestroyOnLoad(gameObject);
     }
 
-    public string Domain;
-
-    // Start is called before the first frame update
-    void Start() { }
-
-    // Update is called once per frame
-    void Update() { }
+    void OnDestroy()
+    {
+        if (instance == this)
+            instance = null;
+    }
 }

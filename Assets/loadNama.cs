@@ -1,19 +1,24 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
+[RequireComponent(typeof(TextMeshProUGUI))]
 public class loadNama : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    TextMeshProUGUI label;
+    void OnEnable()
     {
-        GetComponent<TextMeshProUGUI>().text = "Selamat Datang " + PlayerPrefs.GetString("name");
+        label = GetComponent<TextMeshProUGUI>();
+        PlayerManager.StateChanged += Render;
+        Render();
     }
 
-    // Update is called once per frame
-    void Update()
+    void Render()
     {
-    
+        label.text = "Selamat Datang " + (PlayerManager.instance != null ? PlayerManager.instance.nama : "");
+    }
+
+    void OnDisable()
+    {
+        PlayerManager.StateChanged -= Render;
     }
 }

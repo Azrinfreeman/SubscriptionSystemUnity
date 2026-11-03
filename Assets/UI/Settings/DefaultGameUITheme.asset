@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 837e6242cb77a4f4eadde92219794ece, type: 3}
+  m_Name: DefaultGameUITheme
+  m_EditorClassIdentifier: 
+  ink: {r: 0.1254902, g: 0.21176471, b: 0.27058825, a: 1}
+  primary: {r: 0.1254902, g: 0.37254903, b: 0.45882353, a: 1}
+  surface: {r: 1, g: 1, b: 1, a: 1}
+  field: {r: 0.91764706, g: 0.9529412, b: 0.9647059, a: 1}
+  highlight: {r: 0.9490196, g: 0.7490196, b: 0.3137255, a: 1}
+  error: {r: 0.65882355, g: 0.19607843, b: 0.25882354, a: 1}
+  feedbackSeconds: 0.12
+  panelSeconds: 0.22

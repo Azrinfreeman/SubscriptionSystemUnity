@@ -1,0 +1,31 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Customize and rebuild the trailer</title><style>
+:root{color-scheme:light;--ink:#203645;--primary:#205f75;--field:#eaf3f6;--rule:#cad9df}
+*{box-sizing:border-box}body{max-width:72ch;margin:48px auto;padding:0 24px;color:var(--ink);background:#fff;font:17px/1.5 'Segoe UI',system-ui,sans-serif;overflow-wrap:anywhere}
+h1{font-size:2.1rem;line-height:1.15;margin:0 0 1em}h2{font-size:1.45rem;line-height:1.25;margin:2em 0 .7em}h3{font-size:1.12rem;margin:1.6em 0 .5em}
+p{margin:0 0 1em}a{color:var(--primary);text-underline-offset:3px}a:focus-visible{outline:3px solid var(--primary);outline-offset:3px}
+code{font-family:Consolas,'Courier New',monospace;font-size:.88em;overflow-wrap:anywhere}pre{padding:16px;background:var(--field);overflow-x:auto;line-height:1.5}pre code{white-space:pre-wrap;overflow-wrap:anywhere}
+table{border-collapse:collapse;width:100%;font-size:.88em;margin:1.2em 0}th,td{padding:10px 8px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top;overflow-wrap:anywhere}th{font-weight:600}li{margin:0 0 .6em}ul,ol{padding-left:1.5em}footer{margin-top:3em;padding-top:1em;border-top:1px solid var(--rule);font-size:.85em}
+figure{margin:1.5em 0}figure img{display:block;width:100%;height:auto}figcaption{font-size:.85em;margin-top:.8em}
+@media(max-width:480px){body{margin:24px auto;padding:0 16px;font-size:16px}h1{font-size:1.8rem}th,td{padding:8px 5px}table{table-layout:fixed}}
+@media print{body{margin:0;max-width:none;font-size:11pt}h2,h3{break-after:avoid}tr,pre{break-inside:avoid}a{color:var(--ink)}}
+</style></head><body><main><h1 id="customize-and-rebuild-the-trailer">Customize and rebuild the trailer</h1>
+<p>Edit <code>Docs/Trailer60/src/timeline.ts</code> to change the 60-second trailer&#x27;s copy, and use Remotion Studio to preview the result. The video is a separate authored artifact; changing it does not change the Unity account or billing system.</p>
+<h2 id="open-the-editing-source">Open the editing source</h2>
+<p>The <a href="../Trailer60/README.md">trailer guide</a> lists the source files, prerequisites and rebuild commands. <code>src/Trailer.tsx</code> owns the screen compositions, <code>src/components/</code> owns the cursor/diagram/shared presentation, and <code>src/theme.ts</code> owns the palette and output settings. Genuine screenshots and generated audio live in <code>public/</code>. MP4s, poster, SRT and generated HTML are outputs.</p>
+<h2 id="change-the-opening-title">Change the opening title</h2>
+<ol>
+<li>Open <code>Docs/Trailer60/src/timeline.ts</code> and find the entry with <code>id:&#x27;intro&#x27;</code>.</li>
+<li>Replace its <code>title</code> with a short product-specific headline. For example, <code>title:&#x27;Player accounts.\nStripe subscriptions.\nYour game.&#x27;</code> uses three explicit lines.</li>
+<li>From <code>Docs/Trailer60</code>, run <code>npm run check</code> and <code>npm run stills</code>. Inspect <code>out/qa/frame-60.png</code> for wrapping and overlap. Keep all three lines visible beside the screenshot.</li>
+<li>Run <code>npm run studio</code> and scrub the introduction at <code>http://localhost:3030</code>. The title should settle while the entry menu remains readable.</li>
+<li>Run <code>npm run render</code>, then <code>python scripts/verify.py</code>. Inspect the decoded contact sheets. Both delivery versions should remain 1,800 frames at 30 fps and show the new title.</li>
+</ol>
+<p>This is a representative edit, not a claim that every replacement headline will fit. Long product names need a smaller title size or fewer words. Preserve the actual Malay UI labels in screenshots unless you also update and recapture the application.</p>
+<h2 id="keep-the-payment-explanation-accurate">Keep the payment explanation accurate</h2>
+<p>The illustrated flow names the Unity menu, PHP backend and Stripe-hosted checkout. A signed webhook updates server state, and Unity refreshes it. Preserve the distinction between a browser return and proof of payment. Label fictional screen values and provider illustrations. Never insert real credentials, tickets or customer details into captures.</p>
+<p>The <a href="account-flow-customization.html">account guide</a> explains the implemented boundaries; it remains the source for application customization. The trailer&#x27;s text and diagram explain those boundaries but do not implement them.</p>
+<h2 id="verify-and-export">Verify and export</h2>
+<p>The <a href="../Trailer60/VERIFICATION.md">verification record</a> identifies completed technical and visual checks and remaining limits. The original movie contains music and SFX; the companion removes BGM while retaining identical picture and action sounds. There is no voice-over.</p>
+<p>To rebuild this readable HTML companion from the root, run:</p>
+<pre><code class="language-text">python Docs/Trailer60/scripts/export_tutorial.py</code></pre>
+<p>The tutorial&#x27;s Markdown is authoritative. The supplied capture tool also supports a normal Unity Editor menu; its manual installation instructions are in the trailer guide. A full external-workbench editing/export walkthrough is not certified, so use the documented Remotion command for the exact-duration master.</p></main><footer><a href="trailer-production.md">Editable Markdown source</a></footer></body></html>

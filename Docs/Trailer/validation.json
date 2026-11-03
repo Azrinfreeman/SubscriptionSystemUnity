@@ -1,0 +1,13 @@
+{
+  "frames": 1350,
+  "duration_seconds": 45.0,
+  "resolution": "1920x1080",
+  "fps": 30,
+  "video": "H.264 / yuv420p",
+  "audio": "AAC stereo / 48 kHz",
+  "full_decode": "passed, no errors",
+  "audio_measured_lufs": -16.0,
+  "audio_measured_true_peak_dbtp": -1.42,
+  "bytes": 3563386,
+  "review_frames": 45
+}

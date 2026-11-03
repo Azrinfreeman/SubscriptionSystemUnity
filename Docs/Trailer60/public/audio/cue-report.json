@@ -1,0 +1,82 @@
+{
+  "bpm": 120,
+  "fps": 30,
+  "cues": [
+    {
+      "frame": 15,
+      "kind": "settle"
+    },
+    {
+      "frame": 165,
+      "kind": "sweep"
+    },
+    {
+      "frame": 345,
+      "kind": "click"
+    },
+    {
+      "frame": 495,
+      "kind": "click"
+    },
+    {
+      "frame": 570,
+      "kind": "sweep"
+    },
+    {
+      "frame": 645,
+      "kind": "click"
+    },
+    {
+      "frame": 795,
+      "kind": "click"
+    },
+    {
+      "frame": 930,
+      "kind": "tick"
+    },
+    {
+      "frame": 975,
+      "kind": "tick"
+    },
+    {
+      "frame": 1020,
+      "kind": "tick"
+    },
+    {
+      "frame": 1080,
+      "kind": "tick"
+    },
+    {
+      "frame": 1125,
+      "kind": "tick"
+    },
+    {
+      "frame": 1170,
+      "kind": "tick"
+    },
+    {
+      "frame": 1230,
+      "kind": "sweep"
+    },
+    {
+      "frame": 1358,
+      "kind": "step"
+    },
+    {
+      "frame": 1402,
+      "kind": "step"
+    },
+    {
+      "frame": 1446,
+      "kind": "step"
+    },
+    {
+      "frame": 1530,
+      "kind": "paper"
+    },
+    {
+      "frame": 1680,
+      "kind": "settle"
+    }
+  ]
+}

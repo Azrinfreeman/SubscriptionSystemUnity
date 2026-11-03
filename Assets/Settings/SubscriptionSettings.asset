@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b7e24b79b212d648aea9a11e0a1411b, type: 3}
+  m_Name: SubscriptionSettings
+  m_EditorClassIdentifier: 
+  backendBaseUrl: 
+  gameIdentifier: Your Game
+  requestTimeoutSeconds: 20
+  refreshIntervalSeconds: 30
+  loginScene: LogMasuk
+  homeScene: LamanUtama
+  enforceServerLoginStatus: 1
+  registrationEndpoint: insertUser.php
+  loginEndpoint: loginVerify.php
+  profileEndpoint: getinfouser.php
+  subscriptionEndpoint: getinfo.php
+  verificationEndpoint: sendVerification.php
+  logoutEndpoint: logout.php
+  billingLinkEndpoint: createBillingLink.php
+  choosePlanPage: pilihplan.php
+  changePlanPage: tukarplan.php
+  managePlanPage: manageSub.php

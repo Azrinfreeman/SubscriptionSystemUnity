@@ -1,0 +1,9 @@
+Options -Indexes
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+</IfModule>
+<IfModule mod_headers.c>
+Header always set Referrer-Policy "no-referrer"
+Header always set X-Content-Type-Options "nosniff"
+</IfModule>

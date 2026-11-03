@@ -1,0 +1,15 @@
+{
+  "title": "Your Game. Connected.",
+  "width": 1920, "height": 1080, "fps": 30, "duration": 45,
+  "shots": [
+    {"start":0,"end":4,"kind":"hero","eyebrow":"BUILT FOR YOUR NEXT PROJECT","title":["Your Game.","Connected."],"subtitle":"Unity Subscription System Template"},
+    {"start":4,"end":9,"kind":"accounts","eyebrow":"01 / WELCOME YOUR PLAYERS","title":["Accounts, built", "into your game."],"subtitle":"Registration. Login. Email verification."},
+    {"start":9,"end":14,"kind":"dashboard","eyebrow":"02 / BRING IT TOGETHER","title":["One place for", "your players."],"subtitle":"Your original dashboard. A reusable foundation."},
+    {"start":14,"end":20,"kind":"billing","eyebrow":"03 / CONNECT YOUR SERVICES","title":["Subscriptions,", "with Stripe."],"subtitle":"Choose a plan. Verify payment. Refresh access."},
+    {"start":20,"end":25,"kind":"control","eyebrow":"04 / A CLEAR SUBSCRIPTION FLOW","title":["Keep players", "in control."],"subtitle":"Plan details. Access status. Subscription management."},
+    {"start":25,"end":31,"kind":"settings","eyebrow":"05 / MAKE IT YOURS","title":["Configure it for", "your project."],"subtitle":"One shared settings asset. Your server. Your game."},
+    {"start":31,"end":37,"kind":"architecture","eyebrow":"06 / CONNECTED FOUNDATIONS","title":["Unity client.", "PHP backend."],"subtitle":"Accounts, verification and subscription reconciliation."},
+    {"start":37,"end":41,"kind":"guide","eyebrow":"07 / FOLLOW THE GUIDE","title":["Setup,", "step by step."],"subtitle":"An illustrated 20-page guide is included."},
+    {"start":41,"end":45,"kind":"end","eyebrow":"UNITY SUBSCRIPTION SYSTEM TEMPLATE","title":["Make it yours."],"subtitle":"Existing scenes. Configurable services. Visual setup guide."}
+  ]
+}

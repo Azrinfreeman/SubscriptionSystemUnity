@@ -1,0 +1,117 @@
+{
+  "unityCaptureSize": [
+    3840,
+    2160
+  ],
+  "logicalSize": [
+    1920,
+    1080
+  ],
+  "sampleData": true,
+  "liveRequests": false,
+  "method": "Unity snapshots with reconstructed pointer/state animation",
+  "files": {
+    "account-flow-customization.png": {
+      "sha256": "38e1393873af61d5b9f6fc61df08e2b48559401aea7777c839ef069cde3c0b69",
+      "size": [
+        1102,
+        1426
+      ]
+    },
+    "entry-art.png": {
+      "sha256": "c89f79b62abcb2557192776e4507baea2f0aab7fe21ad9c760b18b506cc2f8a1",
+      "size": [
+        3840,
+        2160
+      ]
+    },
+    "entry.png": {
+      "sha256": "2cd56975edfeef67ef756f851e7b5bc4ecafa0dac97932e3bf6753bab12836e2",
+      "size": [
+        3840,
+        2160
+      ]
+    },
+    "game-ui-customization.png": {
+      "sha256": "fd2d6f658f05473455bf38de93f3f40ede7413ea3cfdefa4f53509026112e3e3",
+      "size": [
+        1102,
+        1426
+      ]
+    },
+    "home-art.png": {
+      "sha256": "0d40e88189581c6b96a6c5f60473ea27955f6942c4e1024a3b1dd4c6934c709c",
+      "size": [
+        3840,
+        2160
+      ]
+    },
+    "home.png": {
+      "sha256": "62043c904952f151af47f3a5d8a6e65f8f30d4d32fe68a376b62bcca802f6ec7",
+      "size": [
+        3840,
+        2160
+      ]
+    },
+    "LogoutPanel.png": {
+      "sha256": "839ed9f2a3f0f04806b24826bb763a22a935b636c15831c525110b2a1d4e4a27",
+      "size": [
+        3840,
+        2160
+      ]
+    },
+    "Profile.png": {
+      "sha256": "feba7b3947c1f6b822ed7ba64442fc5bc5b4b4407c3c2b678015a5ff0f19afa0",
+      "size": [
+        3840,
+        2160
+      ]
+    },
+    "Prompt.png": {
+      "sha256": "67c54c42d050f9ac2b71737391c0c66dcf505054400e6769770352774ae966b1",
+      "size": [
+        3840,
+        2160
+      ]
+    },
+    "SignIn.png": {
+      "sha256": "c909bd39555b74447e6dd6e27bdf4cab11cd95091213798ed6130f566406b5df",
+      "size": [
+        3840,
+        2160
+      ]
+    },
+    "SignUp.png": {
+      "sha256": "cbffb78ef34016e9f1c641fea88178645cea900de90aa44500c688033e950a45",
+      "size": [
+        3840,
+        2160
+      ]
+    },
+    "SubscriptionDetails.png": {
+      "sha256": "a1496d8a7c1ee3e8365cd5deb67d2f543da6aa957f7c02ef5c3af8f5704e647e",
+      "size": [
+        3840,
+        2160
+      ]
+    }
+  },
+  "buttonCenters": {
+    "entryLogin": [
+      960,
+      560
+    ],
+    "entryRegistration": [
+      960,
+      690
+    ],
+    "profile": [
+      960,
+      486
+    ],
+    "subscription": [
+      960,
+      580
+    ]
+  }
+}

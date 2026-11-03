@@ -70,3 +70,12 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Subscription server secrets, dependencies and private operational files
+/Backend/SubscriptionServer/.env
+/Backend/SubscriptionServer/config/games.php
+/Backend/SubscriptionServer/vendor/
+/Backend/SubscriptionServer/storage/
+
+# Python documentation/export checks
+__pycache__/

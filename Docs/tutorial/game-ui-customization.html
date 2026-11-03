@@ -1,0 +1,69 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Customize the game menus</title><style>
+:root{color-scheme:light;--ink:#203645;--primary:#205f75;--field:#eaf3f6;--rule:#cad9df}
+*{box-sizing:border-box}body{max-width:72ch;margin:48px auto;padding:0 24px;color:var(--ink);background:#fff;font:17px/1.5 'Segoe UI',system-ui,sans-serif;overflow-wrap:anywhere}
+h1{font-size:2.1rem;line-height:1.15;margin:0 0 1em}h2{font-size:1.45rem;line-height:1.25;margin:2em 0 .7em}h3{font-size:1.12rem;margin:1.6em 0 .5em}
+p{margin:0 0 1em}a{color:var(--primary);text-underline-offset:3px}a:focus-visible{outline:3px solid var(--primary);outline-offset:3px}
+code{font-family:Consolas,'Courier New',monospace;font-size:.88em;overflow-wrap:anywhere}pre{padding:16px;background:var(--field);overflow-x:auto;line-height:1.5}pre code{white-space:pre-wrap;overflow-wrap:anywhere}
+table{border-collapse:collapse;width:100%;font-size:.88em;margin:1.2em 0}th,td{padding:10px 8px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top;overflow-wrap:anywhere}th{font-weight:600}li{margin:0 0 .6em}ul,ol{padding-left:1.5em}footer{margin-top:3em;padding-top:1em;border-top:1px solid var(--rule);font-size:.85em}
+figure{margin:1.5em 0}figure img{display:block;width:100%;height:auto}figcaption{font-size:.85em;margin-top:.8em}
+@media(max-width:480px){body{margin:24px auto;padding:0 16px;font-size:16px}h1{font-size:1.8rem}th,td{padding:8px 5px}table{table-layout:fixed}}
+@media print{body{margin:0;max-width:none;font-size:11pt}h2,h3{break-after:avoid}tr,pre{break-inside:avoid}a{color:var(--ink)}}
+</style></head><body><main><h1 id="customize-the-game-menus">Customize the game menus</h1>
+<p>Edit the theme asset, shared button face and the two original scenes to change the finished menus. Unity 2022.3.62f3, uGUI and TextMeshPro are already configured; no new package is required.</p>
+<h2 id="contents">Contents</h2>
+<ul>
+<li><a href="#find-the-source">Find the source</a></li>
+<li><a href="#change-a-color-and-a-menu-label">Change a color and a menu label</a></li>
+<li><a href="#keep-color-roles-readable">Keep color roles readable</a></li>
+<li><a href="#understand-navigation-and-feedback">Understand navigation and feedback</a></li>
+<li><a href="#run-and-verify">Run and verify</a></li>
+<li><a href="#export-this-tutorial">Export this tutorial</a></li>
+</ul>
+<h2 id="find-the-source">Find the source</h2>
+<table><thead><tr><th scope="col">Source</th><th scope="col">Responsibility</th></tr></thead><tbody>
+<tr><td>Assets/Scenes/LogMasuk.unity</td><td>Entry, login, registration and device-conflict presentation</td></tr>
+<tr><td>Assets/Scenes/LamanUtama.unity</td><td>Player menu, profile, subscription and logout confirmation</td></tr>
+<tr><td>Assets/UI/Settings/DefaultGameUITheme.asset</td><td>Colors and feedback/panel durations, with Inspector role/tooltips</td></tr>
+<tr><td>Assets/UI/Prefabs/MenuButtonFace.prefab</td><td>Shared button surface, label, focus outline and lower edge</td></tr>
+<tr><td>Assets/UI/Scripts/</td><td>Theme bindings, input feedback, panel transitions, safe area, preferences and access summary</td></tr>
+<tr><td>Assets/LoginController.cs and Assets/RegisterUserController.cs</td><td>Validation, request guards and persistent inline responses</td></tr>
+<tr><td>Assets/Editor/SubscriptionPlayChecks.cs</td><td>Offline account and panel interaction checks</td></tr>
+</tbody></table>
+<p>The scene hierarchy under Canvas/SafeArea remains editable in the normal RectTransform Inspector. Buttons keep their original controller events. Their Face child is a prefab instance. Profile and subscription fields remain read-only TMP_InputFields because the existing loaders bind to those components.</p>
+<p>GameUIRevampTools.Apply is a one-time migration, guarded against reapplication. Routine customization uses the scene, prefab and theme directly. Capture is an editor helper for offscreen screenshots. Generated PNGs, HTML and the Windows build are outputs, not layout sources.</p>
+<h2 id="change-a-color-and-a-menu-label">Change a color and a menu label</h2>
+<ol>
+<li>Open LogMasuk. Select Assets/UI/Settings/DefaultGameUITheme.asset and change Primary to #286C55. Loaded theme bindings update; unopened scenes apply it on enable. The main buttons should become green while their text stays white. This example gives white labels a measured contrast of 6.24:1; recalculate when choosing another color.</li>
+<li>Expand Canvas/SafeArea/UtkSignIn/Button/Face/Label and edit its TMP text to Masuk. Keep that label as a scene override so the shared prefab does not rename every action.</li>
+<li>Select the Button object. GameUIButtonFeedback points to Face; the button&#x27;s own rectangle stays fixed. Adjust Feedback Seconds on the theme from 0.12 to 0.18 to soften hover/press response. Panel Seconds separately controls opening transitions.</li>
+<li>Enter Play mode and open the login form. Confirm the changed button, then inspect the same theme in LamanUtama. Save intentional scene/asset changes after leaving Play mode.</li>
+</ol>
+<p>The default title is Dunia Anda. Change Canvas/SafeArea/title in LogMasuk to your product name. It is separate from SubscriptionSettings.gameIdentifier, which remains an integration setting. Replace existing flattened background PNGs through their Image references; editable illustration originals were not invented.</p>
+<p>To add an action, duplicate an existing scene Button, edit Face/Label and assign its onClick event in the Inspector. Check the target component and method rather than copying an unrelated billing action. Keep decorative graphics&#x27; Raycast Target off. Add reusable visual changes in Prefab Mode; preserve scene-specific text/theme-role overrides.</p>
+<h2 id="keep-color-roles-readable">Keep color roles readable</h2>
+<p><code>GameUIThemeBinding.Role</code> selects one color from the assigned theme for its Graphic or TMP component. Keep the same theme in both scenes. The enum values are explicit so existing scene bindings retain their meaning; do not reorder them when extending the system.</p>
+<table><thead><tr><th scope="col">Theme field</th><th scope="col">Role and default</th></tr></thead><tbody>
+<tr><td>Ink</td><td>Body text and secondary focus, #203645</td></tr>
+<tr><td>Primary</td><td>Main action surface with white label, #205F75</td></tr>
+<tr><td>Surface / Field</td><td>White panels / pale #EAF3F6 input and detail rows</td></tr>
+<tr><td>Highlight</td><td>Gold #F2BF50 focus outline on primary controls</td></tr>
+<tr><td>Error</td><td>Error text, #A83242, paired with a useful message</td></tr>
+</tbody></table>
+<p>White on Primary measures 7.11:1, Ink on Field 11.13:1 and Error on white 6.56:1. Gold on Primary is 4.18:1, suitable for the focus indicator but below the 4.5:1 target for normal-sized text. Use color with labels or focus outlines rather than as the only status signal. These menus retain their existing light surfaces; no dark mode is implemented.</p>
+<p><code>GameUIButtonFeedback</code> caches the assigned Face&#x27;s stable components in Awake. Assign a replacement Face in the Inspector before Play, then test its outline and fixed button hit area. Edit Prefab Mode for shared visuals and scene overrides for action labels. For profile rows and validation policy, use <a href="account-flow-customization.html">the account customization tutorial</a>.</p>
+<h2 id="understand-navigation-and-feedback">Understand navigation and feedback</h2>
+<p>Existing buttons activate or deactivate panel roots. GameUIPanelFlow handles the panel child&#x27;s fade, scale and initial focus; Back closes through the existing button event. Tab and Shift+Tab traverse currently usable controls. Escape activates the top panel&#x27;s Back action. Pointer/focus feedback never delays the account request. Hidden panels release their CanvasGroup raycasts and reset their scale.</p>
+<p>The Animasi control stores GameUI.ReducedMotion in PlayerPrefs. Minimum motion removes panel fades/scales and decorative drift. It does not change authentication or entitlement state. No audio cues or mute control are included.</p>
+<p>GameUIAccessSummary subscribes to PlayerManager.StateChanged. It displays refreshing, unavailable, active or inactive access using real manager state. Profile/subscription Muat semula buttons call the existing coalesced RequestRefresh. Billing still uses the existing authenticated handoff; opening or closing a browser never grants access.</p>
+<h2 id="run-and-verify">Run and verify</h2>
+<p>Open LogMasuk and press Play. Try empty fields, malformed email, Back, rapid reopen, Tab, pointer press and Animasi. For real registration and billing, configure the backend using <a href="../SETUP.md">the existing setup guide</a>.</p>
+<p>Outside Play mode, save scenes and run Tools &gt; Subscription System &gt; Validate Current Scene in both scenes. With the shipped empty backend URL, the expected setup message is Set an HTTPS backend base URL on SubscriptionSettings. Missing references or invalid events are additional failures to fix.</p>
+<p>Run Run Offline Regression Checks, then Run Offline Scene Checks from the same Tools menu. These use local fixtures; scene checks temporarily snapshot and restore account and motion preferences. The 3 November 2026 maintainability run passed 27 data checks and 30 scene checks, including duplicate submission, account isolation, verification cleanup, focus inside an opened form, interrupted transition reset and reduced motion. The build outcome and remaining limits are recorded in <a href="../VERIFICATION.md#maintainability-refactor">VERIFICATION.md</a>.</p>
+<p>For a Windows build, use the project&#x27;s existing SubscriptionTemplateTools.BuildWindowsValidation editor helper or Build Settings with both original scenes enabled. The helper writes Build/SubscriptionValidation/SubscriptionSystem.exe. It does not publish a release.</p>
+<p>Main menus and panel captures were reviewed at 1920x1080, 1280x720, 1024x768, 2560x1080 and 720x1280. Captures are under Docs/UIRevamp/after. These offscreen renders verify layout, not a real touch keyboard or device safe-area workflow. Real gamepad input, mobile keyboard/WebView, hosted email delivery and Stripe transactions remain untested. Screen-reader support is not implemented by the standard uGUI controls.</p>
+<p>The color, label and feedback-duration examples were applied programmatically and restored in both scenes during the maintainability pass. Default entry/home renders were also inspected at the five sizes; 1920x1080 renders matched the baseline pixel-for-pixel. The full manual Inspector walkthrough remains a human review step.</p>
+<p>If a form is invisible, check its root&#x27;s active state, Panel CanvasGroup and disabled legacy Animator before changing references. If clicks fail, check the EventSystem, GraphicRaycaster and any newly added raycast-enabled decoration. Keep the account controllers and loaders assigned when editing hierarchy.</p>
+<h2 id="export-this-tutorial">Export this tutorial</h2>
+<p>From the repository root, run <code>python Docs/tutorial/export_game_ui_tutorial.py</code> for both screen HTML companions. This command uses only Python&#x27;s standard library.</p>
+<p>Run <code>python Docs/tutorial/export_tutorial_pdfs.py</code> for both PDF companions and their static print HTML. This command requires the Python Playwright package and an installed Edge or Chrome browser; use <code>--browser PATH</code> for another Chromium executable. It does not download a browser. If Playwright is missing, install it with <code>python -m pip install playwright</code>.</p>
+<p>Markdown owns the content. The exporters own presentation; <code>tutorial-print.css</code> controls paper size, fonts and colors, and <code>paginate-tutorial.js</code> controls measured page breaks. Edit these sources, then rebuild. The PDFs include clickable contents and printed repository references so they remain readable outside this checkout. The older setup-guide screenshots and trailer depict the previous UI and remain historical references.</p></main><footer><a href="game-ui-customization.md">Editable Markdown source</a></footer></body></html>

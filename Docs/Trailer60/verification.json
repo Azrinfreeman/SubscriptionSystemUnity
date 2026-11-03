@@ -1,0 +1,335 @@
+{
+  "files": {
+    "Subscription_Template_Trailer_60s.mp4": {
+      "duration": "60.000000",
+      "videoFrames": "1800",
+      "videoCodec": "h264",
+      "pixelFormat": "yuv420p",
+      "audio": {
+        "codec_name": "aac",
+        "sample_rate": "48000",
+        "channels": 2
+      },
+      "bytes": 8523133,
+      "videoHash": "SHA256=db6c6ff5f2f18f9fb408917d48d80caca9966c2e8722b3396408921c7bfc00a1",
+      "decode": "passed"
+    },
+    "Subscription_Template_Trailer_60s_NoBGM.mp4": {
+      "duration": "60.000000",
+      "videoFrames": "1800",
+      "videoCodec": "h264",
+      "pixelFormat": "yuv420p",
+      "audio": {
+        "codec_name": "aac",
+        "sample_rate": "48000",
+        "channels": 2
+      },
+      "bytes": 7163169,
+      "videoHash": "SHA256=db6c6ff5f2f18f9fb408917d48d80caca9966c2e8722b3396408921c7bfc00a1",
+      "decode": "passed"
+    }
+  },
+  "reviewFrames": [
+    0,
+    60,
+    210,
+    344,
+    345,
+    352,
+    390,
+    494,
+    495,
+    555,
+    570,
+    645,
+    690,
+    795,
+    840,
+    990,
+    1095,
+    1140,
+    1290,
+    1366,
+    1416,
+    1464,
+    1495,
+    1590,
+    1740,
+    1799
+  ],
+  "audioTiming": [
+    {
+      "cueFrame": 345,
+      "lagSamples": 0,
+      "lagFrames": 0.0
+    },
+    {
+      "cueFrame": 645,
+      "lagSamples": 0,
+      "lagFrames": 0.0
+    },
+    {
+      "cueFrame": 795,
+      "lagSamples": 0,
+      "lagFrames": 0.0
+    }
+  ],
+  "loudness": {
+    "input_i": "-16.21",
+    "input_tp": "-1.20",
+    "input_lra": "3.20",
+    "input_thresh": "-26.23",
+    "output_i": "-16.19",
+    "output_tp": "-1.50",
+    "output_lra": "2.80",
+    "output_thresh": "-26.20",
+    "normalization_type": "dynamic",
+    "target_offset": "0.19"
+  },
+  "readability": {
+    "authenticatedTicket": {
+      "bounds": [
+        465,
+        335,
+        795,
+        450
+      ],
+      "lineHeights": [
+        35,
+        35
+      ],
+      "minimum": 32,
+      "passed": true
+    },
+    "hostedCheckout": {
+      "bounds": [
+        1130,
+        335,
+        1450,
+        450
+      ],
+      "lineHeights": [
+        35,
+        35
+      ],
+      "minimum": 32,
+      "passed": true
+    },
+    "refreshCurrentState": {
+      "bounds": [
+        425,
+        340,
+        945,
+        400
+      ],
+      "lineHeights": [
+        35
+      ],
+      "minimum": 32,
+      "passed": true
+    },
+    "themeAsset": {
+      "bounds": [
+        100,
+        525,
+        850,
+        595
+      ],
+      "lineHeights": [
+        35
+      ],
+      "minimum": 32,
+      "passed": true
+    },
+    "feedbackTiming": {
+      "bounds": [
+        100,
+        700,
+        850,
+        820
+      ],
+      "lineHeights": [
+        35,
+        35
+      ],
+      "minimum": 32,
+      "passed": true
+    },
+    "caption-60": {
+      "bounds": [
+        90,
+        890,
+        1830,
+        1075
+      ],
+      "lineHeights": [
+        73,
+        73
+      ],
+      "minimum": 56,
+      "passed": true
+    },
+    "caption-210": {
+      "bounds": [
+        90,
+        890,
+        1830,
+        1075
+      ],
+      "lineHeights": [
+        73,
+        73
+      ],
+      "minimum": 56,
+      "passed": true
+    },
+    "caption-390": {
+      "bounds": [
+        90,
+        890,
+        1830,
+        1075
+      ],
+      "lineHeights": [
+        73,
+        73
+      ],
+      "minimum": 56,
+      "passed": true
+    },
+    "caption-570": {
+      "bounds": [
+        90,
+        890,
+        1830,
+        1075
+      ],
+      "lineHeights": [
+        73,
+        73
+      ],
+      "minimum": 56,
+      "passed": true
+    },
+    "caption-690": {
+      "bounds": [
+        90,
+        890,
+        1830,
+        1075
+      ],
+      "lineHeights": [
+        73,
+        73
+      ],
+      "minimum": 56,
+      "passed": true
+    },
+    "caption-840": {
+      "bounds": [
+        90,
+        890,
+        1830,
+        1075
+      ],
+      "lineHeights": [
+        73,
+        73
+      ],
+      "minimum": 56,
+      "passed": true
+    },
+    "caption-990": {
+      "bounds": [
+        90,
+        890,
+        1830,
+        1075
+      ],
+      "lineHeights": [
+        73,
+        73
+      ],
+      "minimum": 56,
+      "passed": true
+    },
+    "caption-1140": {
+      "bounds": [
+        90,
+        890,
+        1830,
+        1075
+      ],
+      "lineHeights": [
+        70,
+        73
+      ],
+      "minimum": 56,
+      "passed": true
+    },
+    "caption-1290": {
+      "bounds": [
+        90,
+        890,
+        1830,
+        1075
+      ],
+      "lineHeights": [
+        73,
+        73
+      ],
+      "minimum": 56,
+      "passed": true
+    },
+    "caption-1495": {
+      "bounds": [
+        90,
+        890,
+        1830,
+        1075
+      ],
+      "lineHeights": [
+        73,
+        58
+      ],
+      "minimum": 56,
+      "passed": true
+    },
+    "caption-1590": {
+      "bounds": [
+        90,
+        890,
+        1830,
+        1075
+      ],
+      "lineHeights": [
+        73,
+        73
+      ],
+      "minimum": 56,
+      "passed": true
+    },
+    "caption-1799": {
+      "bounds": [
+        90,
+        890,
+        1830,
+        1075
+      ],
+      "lineHeights": [
+        73,
+        73
+      ],
+      "minimum": 56,
+      "passed": true
+    }
+  },
+  "noBgmSilentInterval": {
+    "seconds": [
+      6,
+      9
+    ],
+    "rms": 0.0,
+    "passed": true
+  }
+}

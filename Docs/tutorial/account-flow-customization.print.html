@@ -1,0 +1,129 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Customize the account flow</title><style>/* Shared print design. Edit Markdown for content; edit this file for appearance. */
+:root{--ink:#203645;--primary:#205f75;--field:#eaf3f6;--rule:#cad9df}
+*{box-sizing:border-box}
+@page{size:Letter;margin:0}
+body{margin:0;background:#eef1f3;color:var(--ink);font:11pt/1.45 'Segoe UI',sans-serif}
+.page{width:8.5in;height:11in;padding:.5in .8in .4in;background:white;display:grid;grid-template-rows:auto 1fr auto;overflow:hidden;break-after:page;margin:20px auto}
+.page:last-child{break-after:auto}
+.running-header{display:flex;justify-content:space-between;gap:20px;border-bottom:1px solid var(--rule);padding-bottom:12px;margin-bottom:22px;font-size:9pt;color:var(--primary)}
+.content{min-height:0;overflow:hidden;padding-bottom:.3in;overflow-wrap:anywhere}
+.page-footer{border-top:1px solid var(--rule);padding-top:10px;display:flex;justify-content:space-between;gap:12px;font-size:8pt;color:var(--ink)}
+h1,h2,h3{font-family:Georgia,serif;font-weight:normal;line-height:1.2;color:var(--primary)}
+h1{font-size:30pt;margin:0 0 18px;max-width:24ch}
+h2{font-size:19pt;margin:24px 0 12px}
+h3{font-size:14pt;margin:18px 0 9px}
+.content>:first-child{margin-top:0}
+p{margin:0 0 13px}ul,ol{padding-left:22px;margin:0 0 13px}li{padding-left:3px;margin-bottom:9px}
+a{color:var(--primary);text-underline-offset:3px}a:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+code{font:9pt/1.45 Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--field);padding:13px 15px;margin:0 0 15px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.45}
+pre code{white-space:pre-wrap}
+table{width:100%;border-collapse:collapse;font-size:10pt;line-height:1.4;margin:0 0 15px;table-layout:fixed}
+th,td{text-align:left;vertical-align:top;padding:9px 8px;border-bottom:1px solid var(--rule);overflow-wrap:anywhere}
+th{font-weight:600;color:var(--primary);border-top:1px solid var(--rule)}
+th:first-child,td:first-child{padding-left:0;width:40%}
+.reference{font-size:9pt;color:var(--ink)}
+figure{margin:14px 0 18px}figure img{display:block;width:100%;height:auto}figcaption{margin-top:10px;font-size:9pt;line-height:1.4}
+@media print{body{background:white;-webkit-print-color-adjust:exact;print-color-adjust:exact}.page{margin:0}}
+</style><script type="text/javascript">/* Move complete text blocks into measured pages. Fail rather than clip a block. */
+async function paginateTutorial(title, sourceName) {
+  await document.fonts.ready;
+  const source = document.querySelector('#source');
+  const blocks = [];
+  for (const node of [...source.children]) {
+    if (node.matches('table')) {
+      // Row-sized units repeat the column headings on each page.
+      for (const row of node.querySelectorAll('tbody tr')) {
+        const table = node.cloneNode(false);
+        table.append(node.querySelector('thead').cloneNode(true));
+        const body = document.createElement('tbody');
+        body.append(row.cloneNode(true));
+        table.append(body);
+        blocks.push(table);
+      }
+    } else if (node.matches('ol,ul')) {
+      let number = Number(node.getAttribute('start') || 1);
+      for (const item of node.children) {
+        const list = node.cloneNode(false);
+        if (node.matches('ol')) list.start = number++;
+        list.append(item.cloneNode(true));
+        blocks.push(list);
+      }
+    } else blocks.push(node);
+  }
+  source.remove();
+  let content;
+  const pages = [];
+  function newPage() {
+    const page = document.createElement('section');
+    page.className = 'page';
+    const header = document.createElement('header');
+    header.className = 'running-header';
+    const brand = document.createElement('span');
+    brand.textContent = 'Subscription System Unity';
+    const guide = document.createElement('span');
+    guide.textContent = title;
+    header.append(brand, guide);
+    content = document.createElement('main');
+    content.className = 'content';
+    const footer = document.createElement('footer');
+    footer.className = 'page-footer';
+    const source = document.createElement('span');
+    source.textContent = 'Editable source: Docs/tutorial/' + sourceName;
+    footer.append(source, document.createElement('span'));
+    page.append(header, content, footer);
+    document.body.append(page);
+    pages.push(page);
+  }
+  function fits() {return content.scrollHeight <= content.clientHeight + 1;}
+  function place(block) {
+    const previous = content.lastElementChild;
+    if (block.matches('table') && previous?.matches('table') &&
+        block.querySelector('thead').innerHTML === previous.querySelector('thead').innerHTML) {
+      const rows = [...block.querySelector('tbody').children];
+      previous.querySelector('tbody').append(...rows);
+      return () => block.querySelector('tbody').append(...rows);
+    }
+    if (block.matches('ol,ul') && previous?.tagName === block.tagName &&
+        (block.matches('ul') || block.start === previous.start + previous.children.length)) {
+      const items = [...block.children];
+      previous.append(...items);
+      return () => block.append(...items);
+    }
+    content.append(block);
+    return () => block.remove();
+  }
+  newPage();
+  for (let i = 0; i < blocks.length; i++) {
+    const block = blocks[i];
+    // The short rebuild instructions belong together on the closing page.
+    if (block.matches('h2') && /export/i.test(block.textContent) && content.children.length) {
+      const undoSection = [];
+      for (let j = i; j < blocks.length; j++) {
+        if (j > i && blocks[j].matches('h2')) break;
+        undoSection.push(place(blocks[j]));
+      }
+      const sectionOverflows = !fits();
+      undoSection.reverse().forEach(undo => undo());
+      if (sectionOverflows) newPage();
+    }
+    const undo = place(block);
+    const next = block.matches('h1,h2,h3') ? blocks[i + 1] : null;
+    const undoNext = next ? place(next) : null;
+    const overflow = !fits();
+    if (undoNext) undoNext();
+    if (overflow) {
+      undo();
+      if (!content.children.length) throw Error('Block exceeds page: ' + block.textContent);
+      newPage();
+      place(block);
+      if (!fits()) throw Error('Block exceeds page: ' + block.textContent);
+    }
+  }
+  pages.forEach((page, i) => page.querySelector('footer').lastChild.textContent = `${i + 1} / ${pages.length}`);
+  return pages.length;
+}
+</script></head><body><section class="page"><header class="running-header"><span>Subscription System Unity</span><span>Customize the account flow</span></header><main class="content"><h1 id="customize-the-account-flow">Customize the account flow</h1><p>Keep configuration in assets, state changes in <code>PlayerManager</code>, requests in <code>Player</code>, and display work in the existing controllers/loaders. Start with setup <span class="reference">(<code>../SETUP.md</code>)</span> if the template is not configured. These examples assume Unity 2022.3.62f3 and the included PHP backend.</p><h2 id="contents">Contents</h2><ul><li><a href="#trace-a-request-before-editing-it">Trace a request before editing it</a></li><li><a href="#find-the-owner-of-a-change">Find the owner of a change</a></li><li><a href="#add-a-display-only-account-row">Add a display-only account row</a></li><li><a href="#adapt-the-phone-policy-on-both-sides">Adapt the phone policy on both sides</a></li><li><a href="#preserve-the-integration-boundaries">Preserve the integration boundaries</a></li><li><a href="#verify-and-export">Verify and export</a></li></ul><h2 id="trace-a-request-before-editing-it">Trace a request before editing it</h2><p><code>LoginController.LogMasuk()</code> validates input and starts its login coroutine. The controller constructs the original form fields, then calls <code>manager.Requests.Post</code>. In normal play this is the <code>Player</code> component, which joins the configured endpoint, sends the request and returns a <code>Player.Result</code>.</p><p>The controller checks the captured session generation before accepting a response. <code>PlayerManager.AcceptLogin</code> owns session credentials and account caches. <code>RefreshNow</code> fetches the current profile and subscription, then raises <code>StateChanged</code>. <code>loadDetails</code>, <code>loadSubscriptionDetails</code>, <code>loadNama</code> and <code>GameUIAccessSummary</code> subscribe while enabled and render that state. They do not independently grant access.</p><p>For billing, <code>LoadPaymentSite</code> asks <code>createBillingLink.php</code> for an authenticated ticket. The returned URL must match the configured HTTPS host and allowed page and must not be expired. Opening the browser sets up a refresh on return; it does not set premium status. See the backend contract <span class="reference">(<code>../BACKEND_CONTRACT.md</code>)</span> for the wire rules.</p><p>The editing map routes common changes to their existing sources. It describes where to edit, not runtime dependencies. The editable SVG <span class="reference">(<code>../diagrams/customization-map-r1.svg</code>)</span> preserves the four destinations in the original Mermaid source <span class="reference">(<code>../diagrams/customization-map.mmd</code>)</span> and arranges them vertically for readable print labels.</p></main><footer class="page-footer"><span>Editable source: Docs/tutorial/account-flow-customization.md</span><span>1 / 6</span></footer></section><section class="page"><header class="running-header"><span>Subscription System Unity</span><span>Customize the account flow</span></header><main class="content"><figure><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAwIDYzMCIgd2lkdGg9IjEyMDAiIGhlaWdodD0iNjMwIiBmb250LWZhbWlseT0iU2Vnb2UgVUksIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiMyMDM2NDUiIHJvbGU9ImltZyIgYXJpYS1sYWJlbGxlZGJ5PSJ0aXRsZSBkZXNjIj4KICA8dGl0bGUgaWQ9InRpdGxlIj5DaG9vc2UgdGhlIHNvdXJjZSB0aGF0IG93bnMgdGhlIGNoYW5nZTwvdGl0bGU+CiAgPGRlc2MgaWQ9ImRlc2MiPkFuIGVkaXRpbmcgZ3VpZGUsIG5vdCBhIHJ1bnRpbWUgZGVwZW5kZW5jeSBkaWFncmFtLiBDb25maWd1cmUgYmFja2VuZCBhbmQgZ2FtZSBrZXkgaW4gU3Vic2NyaXB0aW9uU2V0dGluZ3MuYXNzZXQ7IHR1bmUgY29sb3JzIGFuZCBtb3Rpb24gZHVyYXRpb24gaW4gRGVmYXVsdEdhbWVVSVRoZW1lLmFzc2V0OyBlZGl0IGxheW91dCBhbmQgbGFiZWxzIGluIHNjZW5lcyBhbmQgTWVudUJ1dHRvbkZhY2UucHJlZmFiOyBjaGFuZ2UgdmFsaWRhdGVkIGFwcGxpY2F0aW9uIHJ1bGVzIGluIGFjY291bnQgc2NyaXB0cyBhbmQgUEhQIHNvdXJjZS48L2Rlc2M+CiAgPHJlY3Qgd2lkdGg9IjEyMDAiIGhlaWdodD0iNjMwIiBmaWxsPSIjRkZGRkZGIi8+CiAgPHRleHQgeD0iMzAiIHk9IjQwIiBmb250LXNpemU9IjI4Ij5DaG9vc2UgdGhlIHNvdXJjZSB0aGF0IG93bnMgdGhlIGNoYW5nZTwvdGV4dD4KICA8cmVjdCB4PSIzMCIgeT0iMjc1IiB3aWR0aD0iMjU1IiBoZWlnaHQ9Ijk1IiBmaWxsPSIjMjA1Rjc1Ii8+CiAgPHRleHQgeD0iNTIiIHk9IjMxMiIgZmlsbD0iI0ZGRkZGRiI+V2hhdCBhcmUgeW91PC90ZXh0PgogIDx0ZXh0IHg9IjUyIiB5PSIzNDQiIGZpbGw9IiNGRkZGRkYiPmNoYW5naW5nPzwvdGV4dD4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiMyMDM2NDUiIHN0cm9rZS13aWR0aD0iMiI+CiAgICA8cGF0aCBkPSJNMjg1IDMyMiBIMzM1IE0zMzUgMTM1IFY1MjAgTTMzNSAxMzUgSDc3MCBNMzM1IDI1NSBINzcwIE0zMzUgMzg1IEg3NzAgTTMzNSA1MjAgSDc3MCIvPgogICAgPHBhdGggZD0iTTc2MCAxMjggTDc3MCAxMzUgTDc2MCAxNDIgTTc2MCAyNDggTDc3MCAyNTUgTDc2MCAyNjIgTTc2MCAzNzggTDc3MCAzODUgTDc2MCAzOTIgTTc2MCA1MTMgTDc3MCA1MjAgTDc2MCA1MjciLz4KICAgIDxyZWN0IHg9Ijc4MCIgeT0iOTAiIHdpZHRoPSIzOTAiIGhlaWdodD0iODUiLz4KICAgIDxyZWN0IHg9Ijc4MCIgeT0iMjEwIiB3aWR0aD0iMzkwIiBoZWlnaHQ9Ijg1Ii8+CiAgICA8cmVjdCB4PSI3ODAiIHk9IjM0MCIgd2lkdGg9IjM5MCIgaGVpZ2h0PSI5NSIvPgogICAgPHJlY3QgeD0iNzgwIiB5PSI0NzUiIHdpZHRoPSIzOTAiIGhlaWdodD0iODUiLz4KICA8L2c+CiAgPHRleHQgeD0iMzkwIiB5PSI5OCI+Q29uZmlndXJlIGJhY2tlbmQ8L3RleHQ+CiAgPHRleHQgeD0iMzkwIiB5PSIxMjYiPmFuZCBnYW1lIGtleTwvdGV4dD4KICA8dGV4dCB4PSI4MDAiIHk9IjE0MCI+U3Vic2NyaXB0aW9uU2V0dGluZ3MuYXNzZXQ8L3RleHQ+CiAgPHRleHQgeD0iMzkwIiB5PSIyMTgiPlR1bmUgY29sb3JzIGFuZDwvdGV4dD4KICA8dGV4dCB4PSIzOTAiIHk9IjI0NiI+bW90aW9uIGR1cmF0aW9uPC90ZXh0PgogIDx0ZXh0IHg9IjgwMCIgeT0iMjYwIj5EZWZhdWx0R2FtZVVJVGhlbWUuYXNzZXQ8L3RleHQ+CiAgPHRleHQgeD0iMzkwIiB5PSIzNzYiPkVkaXQgbGF5b3V0IGFuZCBsYWJlbHM8L3RleHQ+CiAgPHRleHQgeD0iODAwIiB5PSIzNzgiPlNjZW5lcyBhbmQ8L3RleHQ+CiAgPHRleHQgeD0iODAwIiB5PSI0MDkiPk1lbnVCdXR0b25GYWNlLnByZWZhYjwvdGV4dD4KICA8dGV4dCB4PSIzOTAiIHk9IjQ4MyI+Q2hhbmdlIHZhbGlkYXRlZDwvdGV4dD4KICA8dGV4dCB4PSIzOTAiIHk9IjUxMSI+YXBwbGljYXRpb24gcnVsZXM8L3RleHQ+CiAgPHRleHQgeD0iODAwIiB5PSI1MTAiPkFjY291bnQgc2NyaXB0cyBhbmQ8L3RleHQ+CiAgPHRleHQgeD0iODAwIiB5PSI1NDEiPlBIUCBzb3VyY2U8L3RleHQ+Cjwvc3ZnPgo=" alt="Figure 1. Choose the source that owns the change. Source: the existing customization-map brief and repository paths listed below."><figcaption>Figure 1. Choose the source that owns the change. Source: the existing customization-map brief and repository paths listed below.</figcaption></figure><h2 id="find-the-owner-of-a-change">Find the owner of a change</h2><table><thead><tr><th scope="col">Existing file</th><th scope="col">Responsibility and safe editing point</th></tr></thead><tbody><tr><td><code>Assets/SubscriptionSettings.cs</code> and <code>Assets/Settings/SubscriptionSettings.asset</code></td><td>URL, game key, endpoints, timing and configuration validation. Use the Inspector for installation values.</td></tr><tr><td><code>Assets/Player.cs</code></td><td>HTTP, credential attachment, response parsing and callback delivery. <code>IPlayerRequests</code> is the existing offline test seam.</td></tr><tr><td><code>Assets/PlayerManager.cs</code></td><td>Session generation, refresh state, explicit cache mappings, access decision and logout.</td></tr><tr><td><code>Assets/LoginController.cs</code>, <code>Assets/RegisterUserController.cs</code></td><td>Form validity, one submission at a time, response messages and retry.</td></tr><tr><td><code>Assets/loadDetails.cs</code></td><td>Profile rows and verification request ownership; <code>VerificationCooldownSeconds</code> controls the client resend delay.</td></tr></tbody></table></main><footer class="page-footer"><span>Editable source: Docs/tutorial/account-flow-customization.md</span><span>2 / 6</span></footer></section><section class="page"><header class="running-header"><span>Subscription System Unity</span><span>Customize the account flow</span></header><main class="content"><table><thead><tr><th scope="col">Existing file</th><th scope="col">Responsibility and safe editing point</th></tr></thead><tbody><tr><td><code>Assets/CheckEmailVerify.cs</code>, <code>Assets/checkEmailValidation.cs</code></td><td>Whether verification or billing controls are currently usable. These are presentation guards; server authorization remains required.</td></tr><tr><td><code>Assets/loadSubscriptionDetails.cs</code></td><td>Plan/date/status rows; <code>StatusMessage</code> prioritizes failures over stale display state.</td></tr><tr><td><code>Backend/SubscriptionServer/src/Accounts.php</code></td><td>Registration policy, login, session conflict handling and verification/mail operations.</td></tr><tr><td><code>Backend/SubscriptionServer/src/Core.php</code>, <code>Billing.php</code></td><td>Server authentication/database boundaries and provider synchronization/checkout.</td></tr></tbody></table><p>The existing lower-case component names are retained because scenes and external code may reference them. Improve a local/private name when useful; do not rename public actions or serialized fields without a compatibility migration.</p><h2 id="add-a-display-only-account-row">Add a display-only account row</h2><p>This example displays the current account ID; it adds no API field and does not make the profile editable. Work in a copy or branch, with Play mode stopped and scene edits saved.</p><ol start="1"><li>Open <code>Assets/Scenes/LamanUtama.unity</code>. Find the profile panel's <code>loadDetails</code> component. Duplicate an existing read-only detail row in that panel and adjust its RectTransform to avoid overlap. Change its visible caption to <code>ID akaun</code>.</li><li>In <code>Assets/loadDetails.cs</code>, beside the other serialized input fields, add:</li></ol><pre><code class="language-csharp">[SerializeField]
+TMP_InputField accountIdField;</code></pre><ol start="3"><li>In <code>LoadDetailsUser()</code>, immediately after the existing name/email/phone <code>Set</code> calls, add:</li></ol><pre><code class="language-csharp">Set(accountIdField, manager != null &amp;&amp; manager.IsLoggedIn
+    ? manager.id_user.ToString()
+    : "");</code></pre></main><footer class="page-footer"><span>Editable source: Docs/tutorial/account-flow-customization.md</span><span>3 / 6</span></footer></section><section class="page"><header class="running-header"><span>Subscription System Unity</span><span>Customize the account flow</span></header><main class="content"><ol start="4"><li>Wait for compilation, then assign the duplicated row's TMP_InputField to Account Id Field on <code>loadDetails</code>. Keep it read-only; the existing <code>Set</code> helper also applies that property. Save the scene and run scene validation.</li><li>Use an authorized development account to inspect the row. Trigger refresh, close/reopen the profile, log out and sign in as another account. The row should show only the current signed-in account ID and clear when there is no session.</li></ol><p>Do not use this ID to authenticate a request. The server validates the bearer session and rejects mismatched identity fields. A modified client can change its own UI. If you later display a new server property, update the wire contract, parsing, state mapping and tests together.</p><h2 id="adapt-the-phone-policy-on-both-sides">Adapt the phone policy on both sides</h2><p>The shipped policy accepts Malaysian mobile numbers through <code>RegisterUserController.MatchPhoneNumberPattern</code> and <code>registerAccount()</code> in server <code>src/Accounts.php</code>. Changing only Unity causes valid-looking forms to fail on the server.</p><p>For a concrete alternative, require a plus sign, a nonzero first digit and 7–15 digits total. This is a simple international-format policy, not a country-specific phone-number verifier. It requires no new package.</p><p>In <code>Assets/RegisterUserController.cs</code>, change the pattern to:</p><pre><code class="language-csharp">public const string MatchPhoneNumberPattern = @"^\+[1-9][0-9]{6,14}$";</code></pre><p>In <code>Backend/SubscriptionServer/src/Accounts.php</code>, change the <code>$validPhone</code> expression inside <code>registerAccount()</code> to:</p><pre><code class="language-php">$validPhone = preg_match('/^\+[1-9][0-9]{6,14}$/', $phone);</code></pre><p>Update the server's registration error text, SignUp's phone label/placeholder, and any tooltip to describe the same format. Keep the existing 30-byte server input cap. Before adopting this in an existing deployment, decide how to normalize stored phone numbers and retain uniqueness; this example does not migrate existing accounts.</p><table><thead><tr><th scope="col">Input</th><th scope="col">Proposed rule</th></tr></thead><tbody><tr><td><code>+60123456789</code></td><td>Accept</td></tr></tbody></table></main><footer class="page-footer"><span>Editable source: Docs/tutorial/account-flow-customization.md</span><span>4 / 6</span></footer></section><section class="page"><header class="running-header"><span>Subscription System Unity</span><span>Customize the account flow</span></header><main class="content"><table><thead><tr><th scope="col">Input</th><th scope="col">Proposed rule</th></tr></thead><tbody><tr><td><code>+1234567</code></td><td>Accept</td></tr><tr><td><code>0123456789</code></td><td>Reject: plus sign missing</td></tr><tr><td><code>+01234567</code></td><td>Reject: first digit is zero</td></tr><tr><td><code>+123456</code></td><td>Reject: fewer than seven digits</td></tr><tr><td><code>+1234567890123456</code></td><td>Reject: more than fifteen digits</td></tr></tbody></table><p>Update existing offline fixtures that use Malaysian numbers intentionally, then test accepted input, rejected input and duplicate phone registration against the same revised policy. The repository retains its Malaysian policy; this example is a customization recipe, not a shipped policy change.</p><h2 id="preserve-the-integration-boundaries">Preserve the integration boundaries</h2><p>Keep session generation checks after asynchronous replies. <code>SessionVersion</code> changes when the account is cleared or its pending refresh is canceled. A late response or protected 401 from an old account must not affect the next account.</p><p>Keep <code>try/finally</code> cleanup around pending requests and release only the verification owner captured by that request. A closed panel must not leave a submit button locked or clear a newer request's state. Pair <code>StateChanged</code> subscriptions with unsubscriptions.</p><p>For PHP changes, preserve prepared SQL parameters, transaction scope, account lock order, single-use tokens and durable checkout idempotency. The account lock in <code>synchronize()</code> spans retrieval and application of provider state so a stale concurrent response cannot win. The checkout intent commits before a provider side effect so an interrupted call can reuse its key.</p><p><code>PlayerPrefs</code> keeps legacy display keys. <code>ApplySubscription</code> now names each wire-field/cache-key mapping explicitly. Add a cache field only when needed, with its cleanup path and round-trip regression check. Do not persist bearer tokens or treat local caches as proof of payment.</p></main><footer class="page-footer"><span>Editable source: Docs/tutorial/account-flow-customization.md</span><span>5 / 6</span></footer></section><section class="page"><header class="running-header"><span>Subscription System Unity</span><span>Customize the account flow</span></header><main class="content"><h2 id="verify-and-export">Verify and export</h2><p>Run the scene validators and both offline suites using setup's offline steps <span class="reference">(<code>../SETUP.md#confirm-the-template-works-offline</code>)</span>. The data suite includes cache identifier mapping, display-field mapping and null-value replacement. Use the server test procedure <span class="reference">(<code>../../Backend/SubscriptionServer/README.md#verification-and-release</code>)</span> after PHP policy or transaction changes. It requires a disposable localhost database and sends no live payment requests.</p><p>Validation evidence for this refactor is recorded in VERIFICATION.md <span class="reference">(<code>../VERIFICATION.md#maintainability-refactor</code>)</span>. Scripted customization checks and manual Editor steps are identified separately there. Hosted email, Stripe transactions, physical-device input and the complete human walkthrough remain owner checks.</p><p>Regenerate both screen HTML companions from the root:</p><pre><code class="language-text">python Docs/tutorial/export_game_ui_tutorial.py</code></pre><p>The screen exporter uses Python's standard library. To rebuild both PDFs and static print HTML, run:</p><pre><code class="language-text">python Docs/tutorial/export_tutorial_pdfs.py</code></pre><p>PDF export requires Python Playwright and installed Edge/Chrome. See the menu tutorial's export steps <span class="reference">(<code>game-ui-customization.html#export-this-tutorial</code>)</span> for prerequisites and the editable print styles. Edit Markdown for content; HTML and PDF are generated outputs. Check code blocks, links, tables and page breaks after a change. The exporters reject unsupported Markdown or page overflow rather than silently dropping content.</p></main><footer class="page-footer"><span>Editable source: Docs/tutorial/account-flow-customization.md</span><span>6 / 6</span></footer></section></body></html>
