@@ -6,7 +6,7 @@ Start with [setup](Docs/SETUP.md). It covers offline checks, server preparation,
 
 ## Trailer
 
-[![Watch the 60-second trailer](output/video/Subscription_Template_60s_Poster.png)](https://github.com/Azrinfreeman/SubscriptionSystemUnity/raw/refs/heads/main/output/video/Subscription_Template_Trailer_60s.mp4)
+[![Watch the 60-second trailer](output/video/Subscription_Template_60s_Poster.png)](https://github.com/Azrinfreeman/Unity-Subscription-Unlock/raw/refs/heads/main/output/video/Subscription_Template_Trailer_60s.mp4)
 
 [Watch or download with music](output/video/Subscription_Template_Trailer_60s.mp4) | [SFX-only version](output/video/Subscription_Template_Trailer_60s_NoBGM.mp4) | [Subtitles](output/video/Subscription_Template_Trailer_60s.srt) | [Editable source and rebuild guide](Docs/Trailer60/README.md)
 
